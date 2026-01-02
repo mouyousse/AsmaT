@@ -290,7 +290,7 @@ public class EnfantController {
 
             File filePDF = new File("AsmatFp/" + enfant.getConfiguration().getNom() + "_Fiche_" + month + ".pdf");
             pdf p = new pdf(enfant, fp, filePDF);
-        }); ds
+        });
 
     }
 
