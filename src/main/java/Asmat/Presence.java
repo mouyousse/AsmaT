@@ -7,7 +7,7 @@ public class Presence {
 
     private float IndRepas;
     private float IndEntretien;
-;
+    private float Ajustement;
     private String Commentaire="";
 
     public Presence(float Day) {
@@ -52,5 +52,11 @@ public class Presence {
     }
     public float getTotalHeures() {
         return getHeureDepart()-getHeureArrive();
+    }
+    public void setAjustement(float Ajustement) {
+        this.Ajustement = Ajustement;
+    }
+    public float getAjustement() {
+        return Ajustement;
     }
 }

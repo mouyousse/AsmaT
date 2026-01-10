@@ -1,5 +1,7 @@
 package Asmat;
 
+import javafx.scene.control.ComboBox;
+
 import java.time.LocalDate;
 
 public class ConfigurationEnfant {
@@ -25,11 +27,15 @@ public class ConfigurationEnfant {
 
     private LocalDate dateNaissance;
     private LocalDate dateEmbauche;
+    private String TypeDuContrat;
+    private String DureeContrat;
+
 
     private int semaines;
     private float nbHeuresSemaine;
 
     private boolean repasFourni;
+    private double RepasPrix;
 
     // Constructeur vide
     public ConfigurationEnfant() {
@@ -57,7 +63,10 @@ public class ConfigurationEnfant {
             float nbHeuresSemaine,
             boolean repasFourni,
             String lieudevie,
-            String Nemployeur
+            String Nemployeur,
+            double RepasPrix,
+            String TypeDuContrat,
+            String DureeContrat
     ) {
         this.nom = nom;
         this.prenom = prenom;
@@ -80,6 +89,9 @@ public class ConfigurationEnfant {
         this.repasFourni = repasFourni;
         this.lieudevie = lieudevie;
         this.Nemployeur = Nemployeur;
+        this.RepasPrix = RepasPrix;
+        this.TypeDuContrat = TypeDuContrat;
+        this.DureeContrat = DureeContrat;
     }
 
     // Getters et setters
@@ -246,5 +258,23 @@ public class ConfigurationEnfant {
     }
     public  void setNemployeur(String nemployeur) {
         this.Nemployeur = nemployeur;
+    }
+    public double getRepasPrix() {
+        return RepasPrix;
+    }
+    public void setRepasPrix(double RepasPrix) {
+        this.RepasPrix = RepasPrix;
+    }
+    public String getTypeContrat() {
+        return this.TypeDuContrat;
+    }
+    public  void setTypeContrat(String typeContrat) {
+        this.TypeDuContrat = typeContrat;
+    }
+    public  String getDureeContrat() {
+        return this.DureeContrat;
+    }
+    public  void setDureeContrat(String dureeContrat) {
+        this.DureeContrat = dureeContrat;
     }
 }

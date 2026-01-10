@@ -2,7 +2,7 @@ package Asmat;
 
 public enum Month {
     JANVIER(31),
-    FEVRIER(28),
+    FEVRIER(29),
     MARS(31),
     AVRIL(30),
     MAI(31),

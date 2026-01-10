@@ -2,6 +2,7 @@ package Asmat;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
@@ -10,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 
 public class EnfantController {
     //data
@@ -23,6 +25,11 @@ public class EnfantController {
     };
     private Enfant enfant;
     private File file;
+     ComboBox<Double> choice;
+    @FXML
+    private TextField Entretienmoins;
+    @FXML
+    private TextField Entretienplus;
     @FXML
     private Label titleEnfant;
     @FXML
@@ -54,6 +61,8 @@ public class EnfantController {
     @FXML
     private Text Nbrdejoursactivites;
     @FXML
+    private Button createenfant1;
+    @FXML
     private Text Heures;
     @FXML
     private Text Repas;
@@ -82,7 +91,11 @@ public class EnfantController {
     @FXML
     private VBox config;
     @FXML
-    private Button createenfant1;
+    private ComboBox<String> TypeDuContrat;
+    @FXML
+    private ComboBox<String> DureeContrat;
+    @FXML
+    private HBox RepasBox;
     @FXML
     private Button annulerbutton;
     @FXML
@@ -120,7 +133,7 @@ public class EnfantController {
     @FXML
     private TextField Mensualisation;
     @FXML
-    private TextField TauxhoraireNet;
+    private TextField Tauxhoraire;
     @FXML
     private TextField Majoration;
     @FXML
@@ -133,8 +146,29 @@ public class EnfantController {
     private CheckBox repas;
     public void initialize()
     {
-        enfants=Main.enfants;
 
+
+        Entretienmoins.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                enfant.setCoefficientBIndem(Double.parseDouble(Entretienmoins.getText()));
+            }
+        });
+        Entretienplus.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                enfant.setCoefficientHIndem(Double.parseDouble(Entretienplus.getText()));
+            }
+        });
+        choice = new ComboBox<>();
+        choice.setValue(0.0);
+        choice.getItems().addAll(4.50,5.50,6.50);
+        choice.setEditable(true);
+        enfants=Main.enfants;
+        //calculHeurenet
+        Tauxhoraire.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                Tauxhoraire.setText(String.valueOf(Float.parseFloat(Tauxhoraire.getText())*0.78));
+            }
+        });
         // Charger tous les enfants existants dans l'UI
 
         AnneeFiche.setTextFormatter(new TextFormatter<>(change -> {
@@ -143,7 +177,11 @@ public class EnfantController {
             }
             return null;
         }));
-        AjouterButton.setOnAction(e -> AjoutForm.setVisible(true));
+        AjouterButton.setOnAction(e -> {
+            AjoutForm.setVisible(true);
+            AnneeFiche.setText(LocalDate.now().getYear()+"");
+
+    });
             Affichage.setOnAction(ev -> {
                 String anneeText = AnneeFiche.getText();
                 String moisChoisi = Moisfiche.getSelectionModel().getSelectedItem();
@@ -170,6 +208,9 @@ public class EnfantController {
             }
         });
         ModiferConfigButton.setOnAction(ev -> {
+            repas.setOnAction(eve->{
+                repasverif();
+            });
             ToggleGroup referentGroup = new ToggleGroup();
             rbReferentMere.setToggleGroup(referentGroup);
             rbReferentPere.setToggleGroup(referentGroup);
@@ -192,13 +233,20 @@ public class EnfantController {
             NbHSemaine.setText(String.valueOf(c.getNbHeuresSemaine()));
             Majoration.setText(String.valueOf(c.getMajoration()));
             Mensualisation.setText(String.valueOf(c.getMensualisation()));
-            TauxhoraireNet.setText(String.valueOf(c.getTauxHoraireNet()));
+            Tauxhoraire.setText(String.valueOf(c.getTauxHoraireNet()));
             MajorationFevrier.setText(String.valueOf(c.getMajorationfevrier()));
             datenaiss.setValue(c.getDateNaissance());
             DateEmbauche.setValue(c.getDateEmbauche());
             rbReferentPere.setSelected(c.isPereReferent());
             Garcontoggle.setSelected(c.isGarcon());
             repas.setSelected(c.isRepasFourni());
+            repasverif();
+            TypeDuContrat.setValue(c.getTypeContrat());
+            DureeContrat.setValue(c.getDureeContrat());
+           if(!choice.getItems().contains(c.getRepasPrix())) {
+                choice.getItems().add(c.getRepasPrix());
+           }
+            choice.setValue(c.getRepasPrix());
         });
         createenfant1.setOnAction(ev -> {
             ConfigurationEnfant c = enfant.getConfiguration();
@@ -213,6 +261,11 @@ public class EnfantController {
             c.setAdressePere(adrpere.getText());
             c.setTelmere(telmere.getText());
             c.setTelpere((telpere.getText()));
+            //repas
+          if (choice.getValue() != null) {
+              c.setRepasPrix(Double.valueOf(String.valueOf(choice.getValue())));
+
+          }
 
 
             // Référent
@@ -226,7 +279,7 @@ public class EnfantController {
 
             c.setSemaines(Integer.parseInt(Semaines.getText().trim()));
             c.setNbHeuresSemaine(Float.parseFloat(NbHSemaine.getText().trim()));
-            c.setTauxHoraireNet(Float.parseFloat(TauxhoraireNet.getText().trim()));
+            c.setTauxHoraireNet(Float.parseFloat(Tauxhoraire.getText().trim()));
             c.setMajoration(Float.parseFloat(Majoration.getText().trim()));
             c.setMajorationfevrier(Float.parseFloat(MajorationFevrier.getText().trim()));
             c.setMensualisation(Float.parseFloat(Mensualisation.getText().trim()));
@@ -234,9 +287,13 @@ public class EnfantController {
             // Dates
             c.setDateNaissance(datenaiss.getValue());
             c.setDateEmbauche(DateEmbauche.getValue());
+            //contrat
+           c.setTypeContrat(TypeDuContrat.getValue());
+           c.setDureeContrat(DureeContrat.getValue());
 
             // Options
             c.setRepasFourni(repas.isSelected());
+
 
             // Fermer la fenêtre config
             config.setVisible(false);
@@ -256,13 +313,27 @@ public class EnfantController {
             int year = Integer.parseInt(anneeText);
             Month month = Month.valueOf(moisChoisi.toUpperCase());
             Fp fp = enfant.getOrCreateFp(year, month);
-            fp.initialiserJours(month.getDays());
+            fp.initialiserJours(month.getDays(),enfant.getConfiguration());
             creerdossier();
             File filePDF = new File(file.getAbsolutePath(), "Fiche_" + month + "_"+ year +".pdf");
             pdf p = new pdf(enfant, fp, filePDF);
             affichemessagealert("le pdf à était crée voir le dossier pour le trouver");
         });
 
+
+    }
+
+    private void repasverif() {
+
+        if(repas.isSelected()){
+            if(!RepasBox.getChildren().contains(choice)) {
+                RepasBox.getChildren().add(choice);
+            }
+        }
+        else
+        {
+            RepasBox.getChildren().remove(choice);
+        }
     }
 
     private void creerdossier() {
@@ -307,7 +378,9 @@ public class EnfantController {
     //Set le label TitleEnfant
     public void setEnfantData(Enfant enfant) {
         this.enfant = enfant;
-        titleEnfant.setText(titleEnfant.getText()+" "+enfant.getId());
+        titleEnfant.setText(titleEnfant.getText()+enfant.getId());
+        Entretienmoins.setText(String.valueOf(enfant.getCoefficientBIndem()));
+        Entretienplus.setText(String.valueOf(enfant.getCoefficientHIndem()));
     }
 
     //affiche tous les jours de la Fp
@@ -317,9 +390,9 @@ public class EnfantController {
         }
 
         Fp fp = enfant.getOrCreateFp(year, moisChoisi);
-        fp.initialiserJours(moisChoisi.getDays());
+        fp.initialiserJours(moisChoisi.getDays(),enfant.getConfiguration());
         Daysvbox.getChildren().clear();
-
+        fp.recalculerRecap(enfant.getConfiguration());
         fp.getJours().forEach((jour, data) -> {
             Button newButton = new Button(jour.toString() + " " + fp.getMonth());
             newButton.setStyle(
@@ -337,7 +410,7 @@ public class EnfantController {
             Daysvbox.getChildren().add(newButton);
 
         });
-        Nbrdejoursactivites.setText("Nombre de jours d'activités : " +fp.getNombredejoursactivites());
+        Nbrdejoursactivites.setText("Nombres de jours d'activités : " +fp.getNombredejoursactivites());
         Heures.setText("Heures: " + fp.getHeures());
         Repas.setText("Repas: " + fp.getRepas());
         IndemniteEntretien.setText("Indemnité: " + fp.getIndmenitesEntretien());
@@ -350,23 +423,46 @@ public class EnfantController {
             Heurearrive.clear();
             heuredepart.clear();
             IndEntretien.clear();
-            IndRepas.clear();
             Commentaire.clear();
             Presence p = fp.getJours().get(Day);
-            //get les donne du jour si il yen a
-            Heurearrive.setText(String.valueOf(p.getHeureArrive()));
-            heuredepart.setText(String.valueOf(p.getHeureDepart()));
+            //get les donnee du jour si il yen a donc different de 0.0
+
+            if (p.getHeureArrive()!=0.0){
+                Heurearrive.setText(String.valueOf(p.getHeureArrive()));
+            }
+            if (p.getHeureDepart()!=0.0 ){
+                heuredepart.setText(String.valueOf(p.getHeureDepart()));
+            }
+                IndRepas.setText(String.valueOf(p.getIndRepas()));
+
+            if (p.getIndEntretien()!=0.0){
+                IndEntretien.setText(String.valueOf(p.getIndEntretien()));
+            }
+            Heurearrive.setOnKeyTyped(e-> calculententretien());
+            heuredepart.setOnKeyTyped(e->{
+                calculententretien();
+            });
             Commentaire.setText(p.getCommentaire());
-            IndRepas.setText(String.valueOf(p.getIndRepas()));
-            IndEntretien.setText(String.valueOf(p.getIndEntretien()));
-
+            
             ValiderButtonDay.setOnAction(e -> {
-
-                p.setHeureArrive(Float.parseFloat(Heurearrive.getText()));
-                p.setHeureDepart(Float.parseFloat(heuredepart.getText()));
+                p.setHeureArrive(0);
+                p.setIndEntretien(0);
+                p.setIndRepas(0);
+                p.setHeureDepart(0);
+                if(!Heurearrive.getText().trim().equals("")){
+                    p.setHeureArrive(Float.parseFloat(Heurearrive.getText()));
+                }
+                if(!IndEntretien.getText().trim().equals("")){
+                    p.setIndEntretien(Float.parseFloat(IndEntretien.getText()));
+                }
+                if(!IndRepas.getText().trim().equals("")){
+                    p.setIndRepas(Float.parseFloat(IndRepas.getText()));
+                }
+                if(!heuredepart.getText().trim().equals("")){
+                    p.setHeureDepart(Float.parseFloat(heuredepart.getText()));
+                }
                 p.setCommentaire(Commentaire.getText());
-                p.setIndRepas(Float.parseFloat(IndRepas.getText()));
-                p.setIndEntretien(Float.parseFloat(IndEntretien.getText()));
+
                 Ajoutjour.setVisible(false);
                 fp.recalculerRecap(enfant.getConfiguration());
                 Ajoutjour.setVisible(false);
@@ -385,7 +481,25 @@ public class EnfantController {
 
 
         }
-        private String randomColorCss () {
+
+    private void calculententretien() {
+        if(!heuredepart.getText().trim().equals("") && !Heurearrive.getText().trim().equals("")){
+            Float Heuredepart = Float.parseFloat(heuredepart.getText().trim());
+            Float heurearrive = Float.parseFloat(Heurearrive.getText().trim());
+            float totalheuredepart = Heuredepart - heurearrive;
+            System.out.println(totalheuredepart);
+            System.out.println(heuredepart + " " + heurearrive);
+            if(totalheuredepart <= 6.23){
+                IndEntretien.setText(String.valueOf(enfant.getCoefficientBIndem()));
+            }
+            if(totalheuredepart >= 6.23){
+                IndEntretien.setText(String.valueOf(totalheuredepart*enfant.getCoefficientHIndem()));
+            }
+
+        }
+    }
+
+    private String randomColorCss () {
             int index = (int) (Math.random() * COULEURS.length);
             return COULEURS[index];
         }

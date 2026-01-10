@@ -2,6 +2,7 @@ package Asmat;
 
 import java.util.HashMap;
 
+
 public class Fp {
 
     private int year;
@@ -68,7 +69,7 @@ public class Fp {
                     totalHeures += p.getTotalHeures();
                     totalRepas += p.getIndRepas();
                     totalEntretien += p.getIndEntretien();
-                    salaire += p.getTotalHeures() * config.getTauxHoraireNet();
+                    salaire += ((p.getTotalHeures() * config.getTauxHoraireNet()) + p.getIndEntretien() + p.getIndRepas());
                     joursActifs++;
                 }
             }
@@ -79,13 +80,18 @@ public class Fp {
             this.SalaireNet = salaire;
             this.Nombredejoursactivites = joursActifs;
         }
-    public void initialiserJours(int nbjours) {
+    public void initialiserJours(int nbjours,ConfigurationEnfant config) {
         if (!daysfpData.isEmpty()) return;
 
         for (int i = 1; i <= nbjours; i++) {
-            daysfpData.put(i, new Presence(i));
+            Presence p = new Presence(i);
+            if(config.isRepasFourni()) {
+                p.setIndRepas((float) config.getRepasPrix());
+            }
+            daysfpData.put(i, p);
         }
     }
+
 
 
 }

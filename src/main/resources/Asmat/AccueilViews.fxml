@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<StackPane prefHeight="720.0" prefWidth="830.0" style="-fx-background-color: linear-gradient(to bottom, beige, #C4AE78);" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Asmat.AccueilController">
+<StackPane prefHeight="720.0" prefWidth="830.0" style="-fx-background-color: linear-gradient(to bottom, beige, #C4AE78);" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Asmat.AccueilController">
 
     <!-- ================= PAGE PRINCIPALE ================= -->
 
@@ -62,10 +73,11 @@
             </HBox>
 
             <!-- DATE + REPAS -->
-            <HBox alignment="CENTER" spacing="50">
+            <HBox fx:id="RepasBox" alignment="CENTER" spacing="50">
                 <DatePicker fx:id="datenaiss" promptText="Date de naissance" />
                 <CheckBox fx:id="repas" text="Repas" />
             </HBox>
+
 
             <!-- ================= INFOS PARENTS ================= -->
 
@@ -123,12 +135,33 @@
          </HBox>
          <HBox alignment="TOP_CENTER" layoutX="40.0" layoutY="547.0" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="537.0" spacing="40.0">
             <children>
-               <TextField fx:id="TauxhoraireNet" promptText="Taux horaire Net" style="-fx-background-radius: 10; -fx-border-radius: 10;" />
+               <TextField fx:id="Tauxhoraire" promptText="Taux horaire" style="-fx-background-radius: 10; -fx-border-radius: 10;" />
                <TextField fx:id="Majoration" layoutX="300.0" layoutY="10.0" promptText="Majoration" style="-fx-background-radius: 10; -fx-border-radius: 10;" />
                <TextField fx:id="MajorationFevrier" layoutX="300.0" layoutY="10.0" promptText="Majoration Fevrier" style="-fx-background-radius: 10; -fx-border-radius: 10;" />
             </children>
          </HBox>
-         <DatePicker fx:id="DateEmbauche" promptText="Date d'embauche" />
+         <HBox alignment="CENTER" prefHeight="17.0" prefWidth="516.0" spacing="10.0">
+            <children>
+               <DatePicker fx:id="DateEmbauche" promptText="Date d'embauche" />
+               <ComboBox fx:id="DureeContrat" prefHeight="25.0" prefWidth="134.0" promptText="Durée du contrat">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Partielle" />
+                        <String fx:value="Indeterminé" />
+                        <String fx:value="Occasionnel" />
+                    </FXCollections>
+                </items>
+               </ComboBox>
+               <ComboBox fx:id="TypeDuContrat" layoutX="297.0" layoutY="10.0" prefHeight="25.0" prefWidth="136.0" promptText="Type de contrat">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="CDI" />
+                        <String fx:value="CDD" />
+                    </FXCollections>
+                </items>
+               </ComboBox>
+            </children>
+         </HBox>
 
             <!-- ================= ACTIONS ================= -->
 

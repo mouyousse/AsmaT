@@ -6,6 +6,8 @@ import java.util.Map;
 public class Enfant {
     private String id;
     private ConfigurationEnfant configuration;
+    private double CoefficientHIndem;
+    private double CoefficientBIndem;
 
     // année -> (mois -> fiche)
     private Map<Integer, Map<String , Fp>> fiches = new HashMap<>();
@@ -36,6 +38,17 @@ public class Enfant {
     public String getId() {
         return id;
     }
-
+    public double getCoefficientHIndem() {
+        return CoefficientHIndem;
+    }
+    public double getCoefficientBIndem() {
+        return CoefficientBIndem;
+    }
+    public void setCoefficientHIndem(double CoefficientHIndem) {
+        this.CoefficientHIndem = CoefficientHIndem;
+    }
+    public void setCoefficientBIndem(double CoefficientBIndem) {
+        this.CoefficientBIndem = CoefficientBIndem;
+    }
 }
 

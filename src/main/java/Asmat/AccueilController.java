@@ -20,6 +20,14 @@ public class AccueilController {
     //data
     List<Enfant> enfants;
     //app graphique
+    ComboBox<Double> choice;
+
+    @FXML
+    private ComboBox<String> TypeDuContrat;
+    @FXML
+    private ComboBox<String> DureeContrat;
+    @FXML
+    private HBox RepasBox;
     @FXML
     private Button createenfant;
     @FXML
@@ -65,7 +73,7 @@ public class AccueilController {
     @FXML
     private TextField Mensualisation;
     @FXML
-    private TextField TauxhoraireNet;
+    private TextField Tauxhoraire;
     @FXML
     private TextField Majoration;
     @FXML
@@ -78,6 +86,10 @@ public class AccueilController {
     private CheckBox repas;
     @FXML
     private void initialize() {
+        choice = new ComboBox<>();
+        choice.setValue(0.0);
+        choice.getItems().addAll(4.50,5.50,6.50);
+        choice.setEditable(true);
         enfants = Main.enfants;
         if (enfants == null) {
             enfants = new ArrayList<>();
@@ -97,12 +109,29 @@ public class AccueilController {
         createenfant.setOnAction(e -> {
             form.setVisible(true);
             enfant.setVisible(false);
+
+
         });
-        annulerbutton.setOnAction(e -> {
+        Tauxhoraire.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                Tauxhoraire.setText(String.valueOf(Float.parseFloat(Tauxhoraire.getText())*0.78));
+            }
+        });
+        annulerbutton.setOnAction(ev -> {
             reaform();
         });
-        createenfant1.setOnAction(e -> {
+        createenfant1.setOnAction(evf -> {
             senform();
+        });
+
+        repas.setOnAction(ev ->{
+            if(repas.isSelected()){
+                RepasBox.getChildren().add(choice);
+            }
+            else
+                {
+                    RepasBox.getChildren().remove(choice);
+                }
         });
 
 
@@ -112,6 +141,29 @@ public class AccueilController {
         prenomchamp.clear();
         perechamp.clear();
         merechamp.clear();
+        telmere.clear();
+        telpere.clear();
+        adrpere.clear();
+        adrmere.clear();
+        Tauxhoraire.clear();
+        Majoration.clear();
+        MajorationFevrier.clear();
+        TypeDuContrat.getSelectionModel().clearSelection();
+        DureeContrat.getSelectionModel().clearSelection();;
+        Mensualisation.clear();
+        Nemployeur.clear();
+        datenaiss.setValue(null);
+        DateEmbauche.setValue(null);
+
+        repas.setSelected(false);
+        RepasBox.getChildren().remove(choice);
+        NbHSemaine.clear();
+        Semaines.clear();
+        choice.setValue(0.0);
+        Filletoggle.setSelected(false);
+        Garcontoggle.setSelected(false);
+        rbReferentPere.setSelected(false);
+        rbReferentMere.setSelected(false);
         form.setVisible(false);
         enfant.setVisible(true);
     }
@@ -137,9 +189,9 @@ public class AccueilController {
             String nemployeur = Nemployeur.getText();
 
 // Taux horaire
-            float tauxHoraireNet = 0f;
-            if (!TauxhoraireNet.getText().trim().isEmpty()) {
-                tauxHoraireNet = Float.parseFloat(TauxhoraireNet.getText().trim());
+            float tauxhoraire = 0f;
+            if (!Tauxhoraire.getText().trim().isEmpty()) {
+                tauxhoraire = Float.parseFloat(Tauxhoraire.getText().trim());
             }
 
 // Majorations
@@ -174,8 +226,14 @@ public class AccueilController {
             if (!NbHSemaine.getText().trim().isEmpty()) {
                 nbHeuresSemaine = Integer.parseInt(NbHSemaine.getText().trim());
             }
-
+            double RepasPrix=0.0;
             boolean repasFourni = repas.isSelected();
+            if(repasFourni) {
+                RepasPrix = Double.parseDouble(String.valueOf(choice.getValue()));
+            }
+
+            String typecontrat=TypeDuContrat.getValue();
+            String dureecontrat=DureeContrat.getValue();
 
             String id=nom+ " " + pr;
             Button newButton = new Button(id);
@@ -186,8 +244,10 @@ public class AccueilController {
             else {
                 color = "pink";
             }
-            ConfigurationEnfant configuration = new ConfigurationEnfant(nom,pr,isGarcon,idpapa,idmere,adressePere,adresseMere,telMere,telPere,isPereReferent,tauxHoraireNet,majoration,majorationFevrier,mensualisation,dateNaissance,dateEmbauche,semaines,nbHeuresSemaine,repasFourni,lieudeVie,nemployeur);
+            ConfigurationEnfant configuration = new ConfigurationEnfant(nom,pr,isGarcon,idpapa,idmere,adressePere,adresseMere,telMere,telPere,isPereReferent,tauxhoraire,majoration,majorationFevrier,mensualisation,dateNaissance,dateEmbauche,semaines,nbHeuresSemaine,repasFourni,lieudeVie,nemployeur,RepasPrix,typecontrat,dureecontrat);
             Enfant e = new Enfant(configuration,id);
+            e.setCoefficientBIndem(2.65);
+            e.setCoefficientHIndem(0.425);
             enfants.add(e);  // ajouter à la liste globale
             EnfantRepository.save(enfants); // sauvegarder immédiatement
             ajouterEnfantUI(e);

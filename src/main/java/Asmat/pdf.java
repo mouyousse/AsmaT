@@ -1,154 +1,229 @@
 package Asmat;
 
-import com.itextpdf.kernel.colors.ColorConstants;
-import com.itextpdf.kernel.pdf.*;
-import com.itextpdf.layout.*;
-import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.properties.*;
-
+import org.apache.pdfbox.pdmodel.*;
+import org.apache.pdfbox.pdmodel.font.*;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import java.awt.Color;
 import java.io.File;
-import java.time.format.TextStyle;
-import java.util.Locale;
+import java.time.format.DateTimeFormatter;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+
 
 public class pdf {
 
+    private PDDocument pdf;
+    private PDPageContentStream contentStream;
+    private float margin = 50;
+    private float yPosition;
+    private PDType1Font fontBold = PDType1Font.HELVETICA_BOLD;
+    private PDType1Font font = PDType1Font.HELVETICA;
+
     public pdf(Enfant enfant, Fp fp, File outputFile) {
-
         try {
-            PdfWriter writer = new PdfWriter(outputFile);
-            PdfDocument pdf = new PdfDocument(writer);
-            Document document = new Document(pdf);
+            pdf = new PDDocument();
+            PDPage page = new PDPage(PDRectangle.A4);
+            pdf.addPage(page);
+            contentStream = new PDPageContentStream(pdf, page);
+            yPosition = page.getMediaBox().getHeight() - margin;
 
-            /* =========================
-               TITRE
-            ========================= */
-            Paragraph title = new Paragraph("FICHE DE PRÉSENCE")
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setFontSize(20)
-                    .setBold();
-
-            document.add(title);
-            document.add(new Paragraph("\n"));
-
-            /* =========================
-               INFOS ENFANT
-            ========================= */
             ConfigurationEnfant c = enfant.getConfiguration();
 
-            Table infoTable = new Table(2);
-            infoTable.setWidth(UnitValue.createPercentValue(100));
+            // ===== TITRE =====
+            writeCenteredText("FICHE DE PRÉSENCE", 20);
+            yPosition -= 25;
+            writeCenteredText(fp.getMonth() + " " + fp.getYear(), 12);
+            yPosition -= 30;
 
-            infoTable.addCell(cellLabel("Nom :"));
-            infoTable.addCell(cellValue(c.getNom()));
+            // ===== IDENTITÉ =====
+            yPosition = drawSectionTitle("Informations générales");
+            String[][] identite = {
+                    {"Nom enfant", c.getNom()},
+                    {"Prénom enfant", c.getPrenom()},
+                    {"Date de naissance", formatDate(c.getDateNaissance())}
+            };
+            yPosition = drawTwoColumnTable(identite);
 
-            infoTable.addCell(cellLabel("Prénom :"));
-            infoTable.addCell(cellValue(c.getPrenom()));
+            // ===== EMPLOYEUR =====
+            yPosition = drawSectionTitle("Employeur");
+            String[][] employeur = {
+                    {"Nom employeur", c.isPereReferent() ? c.getPere() : c.getMere()},
+                    {"Adresse", c.isPereReferent() ? c.getAdressePere() : c.getAdresseMere()}
+            };
+            yPosition = drawTwoColumnTable(employeur);
 
-            infoTable.addCell(cellLabel("Mois :"));
-            infoTable.addCell(cellValue(fp.getMonth().toString()));
+            // ===== CONTRAT =====
+            yPosition = drawSectionTitle("Contrat");
+            String[][] contrat = {
+                    {"Type de contrat", c.getTypeContrat()},
+                    {"Durée du contrat", c.getDureeContrat()},
+                    {"Semaines / an", String.valueOf(c.getSemaines())},
+                    {"Heures / semaine", String.valueOf(c.getNbHeuresSemaine())},
+                    {"Taux horaire net", c.getTauxHoraireNet() + " €"},
+                    {"Mensualisation", String.valueOf(c.getMensualisation())},
+                    {"Majoration", String.valueOf(c.getMajoration())},
+                    {"Majoration février", String.valueOf(c.getMajorationfevrier())}
+            };
+            yPosition = drawTwoColumnTable(contrat);
 
-            infoTable.addCell(cellLabel("Année :"));
-            infoTable.addCell(cellValue(String.valueOf(fp.getYear())));
+            // ===== TABLEAU JOURNALIER =====
+            yPosition = drawSectionTitle("Détail journalier");
+            String[] headers = {"Jour", "Heures", "Repas", "Entretien", "Commentaire"};
+            float[] colWidths = {50, 60, 60, 70, 250};
+            yPosition = drawDailyTable(fp, headers, colWidths);
 
-            document.add(infoTable);
-            document.add(new Paragraph("\n"));
+            // ===== RÉCAPITULATIF MENSUEL =====
+            yPosition -= 20;
+            yPosition = drawSectionTitle("Récapitulatif mensuel");
+            String[][] recapData = {
+                    {"Jours d'activité", String.valueOf(fp.getNombredejoursactivites())},
+                    {"Total heures", String.valueOf(fp.getHeures())},
+                    {"Total repas", String.valueOf(fp.getRepas())},
+                    {"Indemnités entretien", String.valueOf(fp.getIndmenitesEntretien())},
+                    {"Salaire net", String.valueOf(fp.getSalaireNet())}
+            };
+            yPosition = drawTwoColumnTable(recapData, true);
 
-            /* =========================
-               TABLEAU JOURNALIER
-            ========================= */
-            Paragraph subtitle = new Paragraph("Détail journalier")
-                    .setBold()
-                    .setFontSize(14);
-
-            document.add(subtitle);
-
-            Table table = new Table(new float[]{1, 2, 2, 2, 3});
-            table.setWidth(UnitValue.createPercentValue(100));
-
-            header(table, "Jour");
-            header(table, "Heures");
-            header(table, "Repas");
-            header(table, "Entretien");
-            header(table, "Commentaire");
-
-            for (int jour : fp.getJours().keySet()) {
-                Presence p = fp.getJours().get(jour);
-
-                table.addCell(String.valueOf(jour));
-                table.addCell(String.valueOf(p.getTotalHeures()));
-                table.addCell(String.valueOf(p.getIndRepas()));
-                table.addCell(String.valueOf(p.getIndEntretien()));
-                table.addCell(p.getCommentaire() == null ? "" : p.getCommentaire());
-            }
-
-            document.add(table);
-            document.add(new Paragraph("\n"));
-
-            /* =========================
-               RÉCAPITULATIF MENSUEL
-            ========================= */
-            Paragraph recapTitle = new Paragraph("Récapitulatif mensuel")
-                    .setBold()
-                    .setFontSize(14);
-
-            document.add(recapTitle);
-
-            Table recap = new Table(2);
-            recap.setWidth(UnitValue.createPercentValue(60));
-
-            // ⬇⬇⬇ ICI tu branches TES attributs ⬇⬇⬇
-            recap.addCell(cellLabel("Nombre de jours d'activites"));
-            recap.addCell(cellValue(String.valueOf(fp.getNombredejoursactivites())));
-
-            recap.addCell(cellLabel("Total heures"));
-            recap.addCell(cellValue(String.valueOf(fp.getHeures())));
-
-            recap.addCell(cellLabel("Total repas"));
-            recap.addCell(cellValue(String.valueOf(fp.getRepas())));
-
-            recap.addCell(cellLabel("Total indemnités entretien"));
-            recap.addCell(cellValue(String.valueOf(fp.getIndmenitesEntretien())));
-
-            recap.addCell(cellLabel("Tarif horaire"));
-            recap.addCell(cellValue(String.valueOf(fp.getTarif())));
-
-            recap.addCell(cellLabel("Salaire net"));
-            recap.addCell(cellValue(String.valueOf(fp.getSalaireNet())));
-
-            document.add(recap);
-
-            /* =========================
-               FIN
-            ========================= */
-            document.close();
-
-            System.out.println("PDF généré : " + outputFile.getAbsolutePath());
-
+            contentStream.close();
+            pdf.save(outputFile);
+            pdf.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /* =========================
-       HELPERS
-    ========================= */
-
-    private static Cell cellLabel(String text) {
-        return new Cell()
-                .add(new Paragraph(text).setBold())
-                .setBackgroundColor(ColorConstants.LIGHT_GRAY);
+    private String formatDate(java.time.LocalDate d) {
+        return d == null ? "" : d.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
 
-    private static Cell cellValue(String text) {
-        return new Cell().add(new Paragraph(text));
+    private void checkNewPage(float rowHeight) throws Exception {
+        if (yPosition - rowHeight < margin) {
+            contentStream.close();
+            PDPage newPage = new PDPage(PDRectangle.A4);
+            pdf.addPage(newPage);
+            contentStream = new PDPageContentStream(pdf, newPage);
+            yPosition = newPage.getMediaBox().getHeight() - margin;
+        }
     }
 
-    private static void header(Table table, String text) {
-        table.addHeaderCell(
-                new Cell()
-                        .add(new Paragraph(text).setBold())
-                        .setBackgroundColor(ColorConstants.LIGHT_GRAY)
-                        .setTextAlignment(TextAlignment.CENTER)
-        );
+    private float drawSectionTitle(String title) throws Exception {
+        yPosition -= 20;
+        checkNewPage(20);
+        contentStream.beginText();
+        contentStream.setFont(fontBold, 14);
+        contentStream.newLineAtOffset(margin, yPosition);
+        contentStream.showText(title);
+        contentStream.endText();
+        yPosition -= 15;
+        return yPosition;
+    }
+
+    private void writeCenteredText(String text, int fontSize) throws Exception {
+        PDRectangle pageSize = pdf.getPage(pdf.getNumberOfPages() - 1).getMediaBox();
+        float titleWidth = fontBold.getStringWidth(text) / 1000 * fontSize;
+        float startX = (pageSize.getWidth() - titleWidth) / 2;
+        contentStream.beginText();
+        contentStream.setFont(fontBold, fontSize);
+        contentStream.newLineAtOffset(startX, yPosition);
+        contentStream.showText(text);
+        contentStream.endText();
+    }
+
+    private float drawTwoColumnTable(String[][] data) throws Exception {
+        return drawTwoColumnTable(data, false);
+    }
+
+    private float drawTwoColumnTable(String[][] data, boolean highlightSecondColumn) throws Exception {
+        float rowHeight = 20;
+        float cellMargin = 5;
+        float tableWidth = 500;
+        float colWidth = tableWidth / 2;
+
+        for (String[] row : data) {
+            checkNewPage(rowHeight);
+
+            float nextX = margin;
+            for (int i = 0; i < row.length; i++) {
+                // fond vert pour le salaire net
+                if (highlightSecondColumn && row[0].equals("Salaire net") && i == 1) {
+                    contentStream.setNonStrokingColor(Color.GREEN);
+                    contentStream.addRect(nextX, yPosition - rowHeight, colWidth, rowHeight);
+                    contentStream.fill();
+                    contentStream.setNonStrokingColor(Color.BLACK);
+                }
+
+                contentStream.addRect(nextX, yPosition - rowHeight, colWidth, rowHeight);
+                contentStream.stroke();
+
+                contentStream.beginText();
+                contentStream.setFont(i == 0 ? fontBold : font, 12);
+                contentStream.newLineAtOffset(nextX + cellMargin, yPosition - 15);
+                contentStream.showText(row[i] == null ? "" : row[i]);
+                contentStream.endText();
+
+                nextX += colWidth;
+            }
+            yPosition -= rowHeight;
+        }
+
+        return yPosition;
+    }
+
+    private float drawDailyTable(Fp fp, String[] headers, float[] colWidths) throws Exception {
+        float rowHeight = 20;
+        float cellMargin = 5;
+
+        // HEADER
+        checkNewPage(rowHeight);
+        float nextX = margin;
+        contentStream.setNonStrokingColor(Color.LIGHT_GRAY);
+        contentStream.addRect(margin, yPosition - rowHeight, sum(colWidths), rowHeight);
+        contentStream.fill();
+        contentStream.setNonStrokingColor(Color.BLACK);
+
+        for (int i = 0; i < headers.length; i++) {
+            contentStream.beginText();
+            contentStream.setFont(fontBold, 12);
+            contentStream.newLineAtOffset(nextX + cellMargin, yPosition - 15);
+            contentStream.showText(headers[i] == null ? "" : headers[i]);
+            contentStream.endText();
+            nextX += colWidths[i];
+        }
+        yPosition -= rowHeight;
+
+        // LIGNES
+        for (int jour : fp.getJours().keySet()) {
+            Presence p = fp.getJours().get(jour);
+            String[] values = {
+                    String.valueOf(jour),
+                    String.valueOf(p.getTotalHeures()),
+                    String.valueOf(p.getIndRepas()),
+                    String.valueOf(p.getIndEntretien()),
+                    p.getCommentaire() == null ? "" : p.getCommentaire()
+            };
+
+            checkNewPage(rowHeight);
+            nextX = margin;
+            for (int i = 0; i < values.length; i++) {
+                contentStream.addRect(nextX, yPosition - rowHeight, colWidths[i], rowHeight);
+                contentStream.stroke();
+
+                contentStream.beginText();
+                contentStream.setFont(font, 10);
+                contentStream.newLineAtOffset(nextX + cellMargin, yPosition - 15);
+                contentStream.showText(values[i] == null ? "" : values[i]);
+                contentStream.endText();
+
+                nextX += colWidths[i];
+            }
+            yPosition -= rowHeight;
+        }
+        return yPosition;
+    }
+
+    private float sum(float[] arr) {
+        float s = 0;
+        for (float f : arr) s += f;
+        return s;
     }
 }
