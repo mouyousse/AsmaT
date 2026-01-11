@@ -24,22 +24,30 @@ public class EnfantRepository {
 
     // ================== CHEMIN DU FICHIER ==================
     private static File getFile() {
-        String userHome = System.getProperty("user.home"); // fonctionnera sur tous les OS
-        File dir = new File(userHome, DOSSIER);
+        String userHome = System.getProperty("user.home");
+        File dir = new File(userHome, "AsmaTdata/data");
         if (!dir.exists()) dir.mkdirs();
-        return new File(dir, FICHIER);
+        return new File(dir, "enfants.json");
     }
 
-    // ================== CHARGEMENT ==================
     public static List<Enfant> load() {
         File file = getFile();
 
-        // Si le fichier n'existe pas, crée un fichier vide
+        // Si le fichier n'existe pas, tente de le copier depuis le JAR
         if (!file.exists()) {
-            save(new ArrayList<>()); // crée un fichier JSON vide
-            return new ArrayList<>();
+            try (InputStream is = EnfantRepository.class.getResourceAsStream("/Data/enfants.json")) {
+                if (is != null) {
+                    Files.copy(is, file.toPath());
+                } else {
+                    save(new ArrayList<>()); // fichier vide
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                save(new ArrayList<>());
+            }
         }
 
+        // Lecture du fichier externe
         try (Reader reader = new FileReader(file)) {
             Type type = new TypeToken<List<Enfant>>() {}.getType();
             List<Enfant> enfants = gson.fromJson(reader, type);
