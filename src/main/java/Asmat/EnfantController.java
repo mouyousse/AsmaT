@@ -199,13 +199,9 @@ public class EnfantController {
             ValiderButton.setOnAction(eve -> AjoutForm.setVisible(false));
 
         DossierButton.setOnAction(e -> {
-            try {
-                creerdossier();
-                Desktop.getDesktop().open(file);
+            creerdossier();
+            openFolder(file);
 
-            } catch (IOException event) {
-                event.printStackTrace();
-            }
         });
         ModiferConfigButton.setOnAction(ev -> {
             repas.setOnAction(eve->{
@@ -325,6 +321,21 @@ public class EnfantController {
         });
 
 
+    }
+
+    private void openFolder(File folder) {
+        try {
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("mac")) {
+                new ProcessBuilder("open", folder.getAbsolutePath()).start();
+            } else if (os.contains("win")) {
+                new ProcessBuilder("explorer", folder.getAbsolutePath()).start();
+            } else { // Linux
+                new ProcessBuilder("xdg-open", folder.getAbsolutePath()).start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void repasverif() {
