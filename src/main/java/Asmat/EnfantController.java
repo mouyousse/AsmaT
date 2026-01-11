@@ -354,31 +354,19 @@ public class EnfantController {
     private void creerdossier() {
 
         // Dossier racine de l'application (autorisé en écriture)
-        File appDir = AppPaths.getAppDirectory();
-
-        // Sous-dossier AsmatFp
+        File appDir = new File(System.getProperty("user.home"), "Documents");
         File folder = new File(appDir, "AsmatFp");
-        if (!folder.exists()) {
-            boolean created = folder.mkdirs();
-            if (!created) {
-                System.err.println("Impossible de créer le dossier : " + folder.getAbsolutePath());
-                return;
-            }
+        if (!folder.exists()) folder.mkdirs();
+
+        if (enfant == null) {
+            System.err.println("Erreur : enfant non défini !");
+            return;
         }
 
-        // Dossier spécifique à l'enfant
-        this.file = new File(folder, this.enfant.getId());
-        if (!this.file.exists()) {
-            boolean created = this.file.mkdirs();
-            if (!created) {
-                System.err.println("Impossible de créer le dossier : " + this.file.getAbsolutePath());
-                return;
-            }
-        }
+        this.file = new File(folder, enfant.getId());
+        if (!this.file.exists()) this.file.mkdirs();
 
-        if (!Desktop.isDesktopSupported()) {
-            System.out.println("Desktop API non supportée");
-        }
+        System.out.println("Dossier créé : " + this.file.getAbsolutePath());
     }
 
 
