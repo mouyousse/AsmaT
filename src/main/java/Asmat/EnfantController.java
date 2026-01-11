@@ -315,7 +315,11 @@ public class EnfantController {
             Fp fp = enfant.getOrCreateFp(year, month);
             fp.initialiserJours(month.getDays(),enfant.getConfiguration());
             creerdossier();
-            File filePDF = new File(file.getAbsolutePath(), "Fiche_" + month + "_"+ year +".pdf");
+            // crée si besoin
+
+            File filePDF = new File(this.file, "Fiche_" + month + "_" + year + ".pdf");
+
+// ensuite ton code reste identique
             pdf p = new pdf(enfant, fp, filePDF);
             affichemessagealert("le pdf à était crée voir le dossier pour le trouver");
         });
@@ -337,9 +341,12 @@ public class EnfantController {
     }
 
     private void creerdossier() {
-        File folder = new File(System.getProperty("user.dir"), "AsmatFp");
 
-// Vérifie si le dossier existe et le crée si besoin
+        // Dossier racine de l'application (autorisé en écriture)
+        File appDir = AppPaths.getAppDirectory();
+
+        // Sous-dossier AsmatFp
+        File folder = new File(appDir, "AsmatFp");
         if (!folder.exists()) {
             boolean created = folder.mkdirs();
             if (!created) {
@@ -348,24 +355,21 @@ public class EnfantController {
             }
         }
 
-
-// Crée le fichier dans le dossier
-        file = new File(folder, enfant.getId());
-
-        if (!file.exists()) {
-            boolean created = file.mkdirs();
+        // Dossier spécifique à l'enfant
+        this.file = new File(folder, this.enfant.getId());
+        if (!this.file.exists()) {
+            boolean created = this.file.mkdirs();
             if (!created) {
-                System.err.println("impossible de creer le dossier : " + file.getAbsolutePath());
+                System.err.println("Impossible de créer le dossier : " + this.file.getAbsolutePath());
                 return;
             }
         }
 
         if (!Desktop.isDesktopSupported()) {
             System.out.println("Desktop API non supportée");
-            return;
         }
-
     }
+
 
     private void affichemessagealert(String Message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
