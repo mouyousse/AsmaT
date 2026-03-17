@@ -6,12 +6,18 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
-import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.Month;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.time.temporal.IsoFields;
+import java.util.HashMap;
 import java.util.List;
 import java.time.LocalDate;
+import java.util.Locale;
+import java.util.Map;
 
 public class EnfantController {
     //data
@@ -69,7 +75,7 @@ public class EnfantController {
     @FXML
     private Text IndemniteEntretien;
     @FXML
-    private Text Tarif;
+    private Text Ajustement;
     @FXML
     private Text SalaireNet;
     //Page d'ajout de jour
@@ -81,6 +87,8 @@ public class EnfantController {
     private TextField IndRepas;
     @FXML
     private TextField IndEntretien;
+    @FXML
+    private TextField TextAjustement;
     @FXML
     private TextField Commentaire;
     @FXML
@@ -164,11 +172,33 @@ public class EnfantController {
         choice.setEditable(true);
         enfants=Main.enfants;
         //calculHeurenet
-        Tauxhoraire.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue) {
-                Tauxhoraire.setText(String.valueOf(Float.parseFloat(Tauxhoraire.getText())*0.78));
+        final boolean[] converted = {false};
+        Tauxhoraire.textProperty().addListener((obs, oldText, newText) -> {
+            if (!newText.isEmpty()) {
+                converted[0] = false; // nouvelle valeur => prochaine perte de focus recalculera
             }
         });
+
+        Tauxhoraire.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue && !converted[0]) {
+                try {
+                    float valeur = Float.parseFloat(Tauxhoraire.getText());
+                    Tauxhoraire.setText(String.valueOf(valeur * 0.78f));
+                    converted[0] = true;
+                } catch (NumberFormatException e) {
+                    Tauxhoraire.setText("");
+                }
+            }
+        });
+        Mensualisation.setOnMouseClicked(event -> {
+            if(Tauxhoraire.getText().trim().equals("") || NbHSemaine.getText().trim().equals("") || Semaines.getText().trim().equals("")){
+                affichemessagealert("le TauxHoraire et les Semaines ainsi que le Nombre d'heures par semaine ne doivent pas etre vide");
+            }
+            else {
+                Mensualisation.setText(String.valueOf(Float.parseFloat(Tauxhoraire.getText())*Float.parseFloat(NbHSemaine.getText())*Float.parseFloat(Semaines.getText())/12));
+            }
+        });
+
         // Charger tous les enfants existants dans l'UI
 
         AnneeFiche.setTextFormatter(new TextFormatter<>(change -> {
@@ -181,7 +211,7 @@ public class EnfantController {
             AjoutForm.setVisible(true);
             AnneeFiche.setText(LocalDate.now().getYear()+"");
 
-    });
+        });
             Affichage.setOnAction(ev -> {
                 String anneeText = AnneeFiche.getText();
                 String moisChoisi = Moisfiche.getSelectionModel().getSelectedItem();
@@ -192,8 +222,7 @@ public class EnfantController {
                 }
 
                 int year = Integer.parseInt(anneeText);
-                Month month = Month.valueOf(moisChoisi.toUpperCase());
-                AffichageFp(year, month);
+                AffichageFp(year, moisChoisi);
             });
 
             ValiderButton.setOnAction(eve -> AjoutForm.setVisible(false));
@@ -307,13 +336,18 @@ public class EnfantController {
             }
 
             int year = Integer.parseInt(anneeText);
-            Month month = Month.valueOf(moisChoisi.toUpperCase());
+            DateTimeFormatter formatter =
+                    DateTimeFormatter.ofPattern("MMMM", Locale.FRENCH);
+
+            moisChoisi = moisChoisi.toLowerCase(Locale.FRENCH);
+
+            Month month = Month.from(formatter.parse(moisChoisi));
+            YearMonth mois = YearMonth.of(year, month);
             Fp fp = enfant.getOrCreateFp(year, month);
-            fp.initialiserJours(month.getDays(),enfant.getConfiguration());
             creerdossier();
             // crée si besoin
 
-            File filePDF = new File(this.file, "Fiche_" + month + "_" + year + ".pdf");
+            File filePDF = new File(this.file, "Fiche_" + moisChoisi.toUpperCase() + "_" + year + ".pdf");
 
 // ensuite ton code reste identique
             pdf p = new pdf(enfant, fp, filePDF);
@@ -323,6 +357,10 @@ public class EnfantController {
 
     }
 
+    /**
+     * method pour ouvrir le dossier associé en fonction de l'os
+     * @param folder le chemin du dossier a ouvrir
+     */
     private void openFolder(File folder) {
         try {
             String os = System.getProperty("os.name").toLowerCase();
@@ -337,7 +375,9 @@ public class EnfantController {
             e.printStackTrace();
         }
     }
-
+    /**
+     * methode pour gerer la box repas et sa logique
+     */
     private void repasverif() {
 
         if(repas.isSelected()){
@@ -351,6 +391,9 @@ public class EnfantController {
         }
     }
 
+    /**
+     * methode pour creer un dossier pour l'enfant
+     */
     private void creerdossier() {
 
         // Dossier racine de l'application (autorisé en écriture)
@@ -369,7 +412,10 @@ public class EnfantController {
         System.out.println("Dossier créé : " + this.file.getAbsolutePath());
     }
 
-
+    /**
+     * method pour afficher un message popup
+     * @param Message le message a affiché
+     */
     private void affichemessagealert(String Message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Information");
@@ -386,18 +432,54 @@ public class EnfantController {
         Entretienplus.setText(String.valueOf(enfant.getCoefficientHIndem()));
     }
 
-    //affiche tous les jours de la Fp
-    public void AffichageFp(int year, Month moisChoisi) {
-        if (moisChoisi == null) {
-            return;
-        }
 
-        Fp fp = enfant.getOrCreateFp(year, moisChoisi);
-        fp.initialiserJours(moisChoisi.getDays(),enfant.getConfiguration());
+    /**
+     * methode pour afficher tous les jours du mois sélectionné //TODO
+     * @param year l'année choisi
+     * @param moisChoisi le mois a afficher
+     * logic : ici la classe FP sert a l'affichage donc notre methods doit prendre toute les semaines du mois meme ceux a cheval faire les semaines grace
+     * a presenceSemaine et mettre tous dans presencemois ensuite prendre une list des presences du mois qui seront affiché donc pas ceux a calcule puis réalise les calculs
+     * grace a presencemois probablement grace a une autre methodes
+     */
+    public void AffichageFp(int year, String moisChoisi) {
+        if (moisChoisi == null) return;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM", Locale.FRENCH);
+        moisChoisi = moisChoisi.toLowerCase(Locale.FRENCH);
+        Month month = Month.from(formatter.parse(moisChoisi));
+
+        Fp fp = enfant.getOrCreateFp(year, month);
+
+        // Récupérer la FP du mois précédent
+        String moisPrecedentStr = moisPrecendent(month.name());
+        Month moisPrecedent = Month.valueOf(moisPrecedentStr);
+        int yearPrecedent = moisPrecedentStr.equals("DECEMBER") ? year - 1 : year;
+        Fp fpPrecedente = enfant.getOrCreateFp(yearPrecedent, moisPrecedent);
+
+        // Recalculer le récap avec la FP précédente
+        fp.recalculerRecap(enfant.getConfiguration(), fpPrecedente);
+
+        // Mettre à jour l'affichage du récap
+        Nbrdejoursactivites.setText("Nombre de jours d'activités : " + fp.getNombredejoursactivites());
+        Heures.setText("Heures: " + fp.getHeures());
+        Repas.setText("Repas: " + fp.getRepas());
+        IndemniteEntretien.setText("Indemnité: " + fp.getIndmenitesEntretien());
+        Ajustement.setText("Ajustement: " + fp.getAjustementT());
+        SalaireNet.setText("Salaire net: " + fp.getSalaireNet());
+
         Daysvbox.getChildren().clear();
-        fp.recalculerRecap(enfant.getConfiguration());
-        fp.getJours().forEach((jour, data) -> {
-            Button newButton = new Button(jour.toString() + " " + fp.getMonth());
+
+        // Afficher tous les jours du MOIS (pas du mois précédent)
+        YearMonth yearMonth = YearMonth.of(year, month);
+        int totalJours = yearMonth.lengthOfMonth();
+
+        for (int day = 1; day <= totalJours; day++) {
+            LocalDate date = LocalDate.of(year, month, day);
+            String jourFrancais = date.getDayOfWeek().getDisplayName(
+                    java.time.format.TextStyle.FULL, Locale.FRENCH
+            );
+
+            Button newButton = new Button(day + " " + jourFrancais);
             newButton.setStyle(
                     "-fx-background-color: " + randomColorCss() + ";" +
                             "-fx-text-fill: white;" +
@@ -405,94 +487,124 @@ public class EnfantController {
             );
             newButton.setMaxWidth(Double.MAX_VALUE);
             newButton.setMaxHeight(Double.MAX_VALUE);
+
+            final int finalDay = day;
             newButton.setOnAction(e -> {
                 Ajoutjour.setVisible(true);
                 CancelButtonDay.setOnAction(ev -> Ajoutjour.setVisible(false));
-                ajoutjour(fp, jour);
+                ajoutjour(fp, finalDay, fpPrecedente);
             });
+
             Daysvbox.getChildren().add(newButton);
-
-        });
-        Nbrdejoursactivites.setText("Nombres de jours d'activités : " +fp.getNombredejoursactivites());
-        Heures.setText("Heures: " + fp.getHeures());
-        Repas.setText("Repas: " + fp.getRepas());
-        IndemniteEntretien.setText("Indemnité: " + fp.getIndmenitesEntretien());
-        Tarif.setText("Tarif: " + fp.getTarif());
-        SalaireNet.setText("Salaire net: " + fp.getSalaireNet());
-
-    }
-        //ajoute les donnee d'un jour
-        public void ajoutjour (Fp fp, int Day){
-            Heurearrive.clear();
-            heuredepart.clear();
-            IndEntretien.clear();
-            Commentaire.clear();
-            Presence p = fp.getJours().get(Day);
-            //get les donnee du jour si il yen a donc different de 0.0
-
-            if (p.getHeureArrive()!=0.0){
-                Heurearrive.setText(String.valueOf(p.getHeureArrive()));
-            }
-            if (p.getHeureDepart()!=0.0 ){
-                heuredepart.setText(String.valueOf(p.getHeureDepart()));
-            }
-                IndRepas.setText(String.valueOf(p.getIndRepas()));
-
-            if (p.getIndEntretien()!=0.0){
-                IndEntretien.setText(String.valueOf(p.getIndEntretien()));
-            }
-            Heurearrive.setOnKeyTyped(e-> calculententretien());
-            heuredepart.setOnKeyTyped(e->{
-                calculententretien();
-            });
-            Commentaire.setText(p.getCommentaire());
-            
-            ValiderButtonDay.setOnAction(e -> {
-                p.setHeureArrive(0);
-                p.setIndEntretien(0);
-                p.setIndRepas(0);
-                p.setHeureDepart(0);
-                if(!Heurearrive.getText().trim().equals("")){
-                    p.setHeureArrive(Float.parseFloat(Heurearrive.getText()));
-                }
-                if(!IndEntretien.getText().trim().equals("")){
-                    p.setIndEntretien(Float.parseFloat(IndEntretien.getText()));
-                }
-                if(!IndRepas.getText().trim().equals("")){
-                    p.setIndRepas(Float.parseFloat(IndRepas.getText()));
-                }
-                if(!heuredepart.getText().trim().equals("")){
-                    p.setHeureDepart(Float.parseFloat(heuredepart.getText()));
-                }
-                p.setCommentaire(Commentaire.getText());
-
-                Ajoutjour.setVisible(false);
-                fp.recalculerRecap(enfant.getConfiguration());
-                Ajoutjour.setVisible(false);
-
-                Nbrdejoursactivites.setText("Nombre de jours d'activités : " +fp.getNombredejoursactivites());
-                Heures.setText("Heures: " + fp.getHeures());
-                Repas.setText("Repas: " + fp.getRepas());
-                IndemniteEntretien.setText("Indemnité: " + fp.getIndmenitesEntretien());
-                Tarif.setText("Tarif: " + fp.getTarif());
-                SalaireNet.setText("Salaire net: " + fp.getSalaireNet());
-
-                ScrollDay.setContent(Daysvbox);
-
-                EnfantRepository.save(Main.enfants);
-            });
-
-
         }
 
+        ScrollDay.setContent(Daysvbox);
+        ScrollDay.setVvalue(0.0);
+    }
+
+    /**
+     * method pour ajouter un jour dans une fp donc ici il faut changer la logic pour l'ajouter dans les presences semaines et surttout les calculs par mois
+     * donc ici l'affichage doit etre a jour sur les calculs a chaque fois grace peut etre a une methode //TODO
+     * @param fp la fp
+     * @param day le jour
+     */
+    public void ajoutjour(Fp fp, int day) {
+        // Clear des champs
+        Heurearrive.clear();
+        heuredepart.clear();
+        IndEntretien.clear();
+        Commentaire.clear();
+        TextAjustement.clear();
+
+        // Récupérer ou créer la présence pour ce jour
+        Presence p = fp.getOrCreatePresence(day, enfant.getConfiguration());
+
+        // Remplir les champs avec les valeurs existantes
+        if (p.getAjustement() != 0.0) {
+            TextAjustement.setText(String.valueOf(p.getAjustement()));
+        }
+        if (p.getHeureArrive() != 0.0) {
+            Heurearrive.setText(String.valueOf(p.getHeureArrive()));
+        }
+        if (p.getHeureDepart() != 0.0) {
+            heuredepart.setText(String.valueOf(p.getHeureDepart()));
+        }
+        if (enfant.getConfiguration().isRepasFourni()) {
+            IndRepas.setText(String.valueOf(p.getIndRepas()));
+        }
+        if (p.getIndEntretien() != 0.0) {
+            IndEntretien.setText(String.valueOf(p.getIndEntretien()));
+        }
+        Commentaire.setText(p.getCommentaire() != null ? p.getCommentaire() : "");
+
+        // Listener pour calculer l'indemnité d'entretien automatiquement
+        Heurearrive.setOnKeyTyped(e -> calculententretien());
+        heuredepart.setOnKeyTyped(e -> calculententretien());
+
+        // Action du bouton Valider
+        final Presence pFinal = p;
+        ValiderButtonDay.setOnAction(e -> {
+            // Reset des valeurs
+            pFinal.setHeureArrive(0);
+            pFinal.setIndEntretien(0);
+            pFinal.setIndRepas(0);
+            pFinal.setHeureDepart(0);
+            pFinal.setAjustement(0);
+
+            // Remplissage avec les nouvelles valeurs
+            if (!TextAjustement.getText().trim().isEmpty() &&
+                    TextAjustement.getText().matches("^[0-9]+(\\.[0-9]+)?$")) {
+                pFinal.setAjustement(Float.parseFloat(TextAjustement.getText()));
+            }
+            if (!Heurearrive.getText().trim().isEmpty() &&
+                    Heurearrive.getText().matches("^[0-9]+(\\.[0-9]+)?$")) {
+                pFinal.setHeureArrive(Float.parseFloat(Heurearrive.getText()));
+            }
+            if (!IndEntretien.getText().trim().isEmpty() &&
+                    IndEntretien.getText().matches("^[0-9]+(\\.[0-9]+)?$")) {
+                pFinal.setIndEntretien(Float.parseFloat(IndEntretien.getText()));
+            }
+            if (!IndRepas.getText().trim().isEmpty() &&
+                    IndRepas.getText().matches("^[0-9]+(\\.[0-9]+)?$")) {
+                pFinal.setIndRepas(Float.parseFloat(IndRepas.getText()));
+            }
+            if (!heuredepart.getText().trim().isEmpty() &&
+                    heuredepart.getText().matches("^[0-9]+(\\.[0-9]+)?$")) {
+                pFinal.setHeureDepart(Float.parseFloat(heuredepart.getText()));
+            }
+
+            pFinal.setCommentaire(Commentaire.getText());
+
+            // Fermer le formulaire
+            Ajoutjour.setVisible(false);
+
+            // Recalculer le récap
+            fp.recalculerRecap(enfant.getConfiguration(), fpPrecedente);
+
+            // Mettre à jour l'affichage
+            Nbrdejoursactivites.setText("Nombre de jours d'activités : " + fp.getNombredejoursactivites());
+            Heures.setText("Heures: " + fp.getHeures());
+            Repas.setText("Repas: " + fp.getRepas());
+            IndemniteEntretien.setText("Indemnité: " + fp.getIndmenitesEntretien());
+            Ajustement.setText("Ajustement: " + fp.getAjustementT());
+            SalaireNet.setText("Salaire net: " + fp.getSalaireNet());
+
+            // Sauvegarder
+            EnfantRepository.save(Main.enfants);
+        });
+    }
+
+    /**
+     * methode pour calculer les entretien en direct sur une fp qui sera modifie a l'affichage
+     */
     private void calculententretien() {
         if(!heuredepart.getText().trim().equals("") && !Heurearrive.getText().trim().equals("")){
             Float Heuredepart = Float.parseFloat(heuredepart.getText().trim());
             Float heurearrive = Float.parseFloat(Heurearrive.getText().trim());
             float totalheuredepart = Heuredepart - heurearrive;
-            System.out.println(totalheuredepart);
-            System.out.println(heuredepart + " " + heurearrive);
-            if(totalheuredepart <= 6.23){
+            if(totalheuredepart <0 )
+                IndEntretien.setText(String.valueOf(0));
+            else if(totalheuredepart <= 6.23){
                 IndEntretien.setText(String.valueOf(enfant.getCoefficientBIndem()));
             }
             if(totalheuredepart >= 6.23){
@@ -502,9 +614,67 @@ public class EnfantController {
         }
     }
 
+    /**
+     * algorithme qui retourne une couleur aléatoire
+     * @return une couleur aléatoire
+     */
     private String randomColorCss () {
             int index = (int) (Math.random() * COULEURS.length);
             return COULEURS[index];
         }
-
+        //ici se trouve les methodes d'implementation mieux faut les éviter elles sont très limitées
+    private String moisPrecendent(String mois) {
+        switch(mois) {
+            case "JANUARY": return "DECEMBER";
+            case "FEBRUARY": return "JANUARY";
+            case "MARCH": return "FEBRUARY";
+            case "APRIL": return "MARCH";
+            case "MAY": return "APRIL";
+            case "JUNE": return "MAY";
+            case "JULY": return "JUNE";
+            case "AUGUST": return "JULY";
+            case "SEPTEMBER": return "AUGUST";
+            case "OCTOBER": return "SEPTEMBER";
+            case "NOVEMBER": return "OCTOBER";
+            case "DECEMBER": return "NOVEMBER";
+            default: throw new IllegalArgumentException("Mois invalide: " + mois);
+        }
     }
+    private String Moisenanglais(String mois) {
+        switch(mois) {
+            case "janvier": return "JANUARY";
+            case "février": return "FEBRUARY";
+            case "mars": return "MARCH";
+            case "avril": return "APRIL";
+            case "mai": return "MAY";
+            case "juin": return "JUNE";
+            case "juillet": return "JULY";
+            case "août": return "AUGUST";
+            case "septembre": return "SEPTEMBER";
+            case "octobre": return "OCTOBER";
+            case "novembre": return "NOVEMBER";
+            case "décembre": return "DECEMBER";
+            default: throw new IllegalArgumentException("Mois invalide: " + mois);
+        }
+    }
+    private String moisEnFrancais(String mois) {
+        switch (mois) {
+            case "JANUARY": return "janvier";
+            case "FEBRUARY": return "février";
+            case "MARCH": return "mars";
+            case "APRIL": return "avril";
+            case "MAY": return "mai";
+            case "JUNE": return "juin";
+            case "JULY": return "juillet";
+            case "AUGUST": return "août";
+            case "SEPTEMBER": return "septembre";
+            case "OCTOBER": return "octobre";
+            case "NOVEMBER": return "novembre";
+            case "DECEMBER": return "décembre";
+            default:
+                throw new IllegalArgumentException("Mois invalide: " + mois);
+        }
+    }
+
+
+}

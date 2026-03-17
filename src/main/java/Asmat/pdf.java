@@ -1,13 +1,13 @@
 package Asmat;
 
 import org.apache.pdfbox.pdmodel.*;
-import org.apache.pdfbox.pdmodel.font.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import java.awt.Color;
 import java.io.File;
 import java.time.format.DateTimeFormatter;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 
 public class pdf {
@@ -24,16 +24,27 @@ public class pdf {
             pdf = new PDDocument();
             PDPage page = new PDPage(PDRectangle.A4);
             pdf.addPage(page);
+            PDImageXObject image =
+                    PDImageXObject.createFromFile("C:\\Users\\amaya\\IdeaProjects\\AsmaT\\src\\main\\resources\\Asmat\\images\\fp.png", pdf);
+
+
             contentStream = new PDPageContentStream(pdf, page);
+            contentStream.drawImage(
+                    image,
+                    page.getMediaBox().getWidth()/2-100,
+                    page.getMediaBox().getHeight()-160,
+                    200,
+                    160
+            );
+
             yPosition = page.getMediaBox().getHeight() - margin;
 
             ConfigurationEnfant c = enfant.getConfiguration();
 
             // ===== TITRE =====
-            writeCenteredText("FICHE DE PRÉSENCE", 20);
-            yPosition -= 25;
-            writeCenteredText(fp.getMonth() + " " + fp.getYear(), 12);
-            yPosition -= 30;
+            yPosition -= 90;
+            writeCenteredText(moisEnFrancais(fp.getMonth()).toUpperCase() + " " + fp.getYear(), 12);
+            yPosition -= 20;
 
             // ===== IDENTITÉ =====
             yPosition = drawSectionTitle("Informations générales");
@@ -192,33 +203,51 @@ public class pdf {
         yPosition -= rowHeight;
 
         // LIGNES
-        for (int jour : fp.getJours().keySet()) {
-            Presence p = fp.getJours().get(jour);
-            String[] values = {
-                    String.valueOf(jour),
-                    String.valueOf(p.getTotalHeures()),
-                    String.valueOf(p.getIndRepas()),
-                    String.valueOf(p.getIndEntretien()),
-                    p.getCommentaire() == null ? "" : p.getCommentaire()
-            };
+        for (int semaines : fp.getSemaines().keySet()) {
+            for (Presence p : fp.getSemaines().get(semaines)) {
+                String[] values = {
+                        String.valueOf(p.getDay()),
+                        String.valueOf(p.getTotalHeures()),
+                        String.valueOf(p.getIndRepas()),
+                        String.valueOf(p.getIndEntretien()),
+                        p.getCommentaire() == null ? "" : p.getCommentaire()
+                };
+                checkNewPage(rowHeight);
+                nextX = margin;
+                for (int i = 0; i < values.length; i++) {
+                    contentStream.addRect(nextX, yPosition - rowHeight, colWidths[i], rowHeight);
+                    contentStream.stroke();
 
-            checkNewPage(rowHeight);
-            nextX = margin;
-            for (int i = 0; i < values.length; i++) {
-                contentStream.addRect(nextX, yPosition - rowHeight, colWidths[i], rowHeight);
-                contentStream.stroke();
+                    contentStream.beginText();
+                    contentStream.setFont(font, 10);
+                    contentStream.newLineAtOffset(nextX + cellMargin, yPosition - 15);
+                    contentStream.showText(values[i] == null ? "" : values[i]);
+                    contentStream.endText();
 
-                contentStream.beginText();
-                contentStream.setFont(font, 10);
-                contentStream.newLineAtOffset(nextX + cellMargin, yPosition - 15);
-                contentStream.showText(values[i] == null ? "" : values[i]);
-                contentStream.endText();
-
-                nextX += colWidths[i];
+                    nextX += colWidths[i];
+                }
+                yPosition -= rowHeight;
             }
-            yPosition -= rowHeight;
         }
         return yPosition;
+    }
+    private String moisEnFrancais(String mois) {
+        switch (mois) {
+            case "JANUARY": return "janvier";
+            case "FEBRUARY": return "février";
+            case "MARCH": return "mars";
+            case "APRIL": return "avril";
+            case "MAY": return "mai";
+            case "JUNE": return "juin";
+            case "JULY": return "juillet";
+            case "AUGUST": return "août";
+            case "SEPTEMBER": return "septembre";
+            case "OCTOBER": return "octobre";
+            case "NOVEMBER": return "novembre";
+            case "DECEMBER": return "décembre";
+            default:
+                throw new IllegalArgumentException("Mois invalide: " + mois);
+        }
     }
 
     private float sum(float[] arr) {

@@ -10,31 +10,43 @@ public class Enfant {
     private double CoefficientBIndem;
 
     // année -> (mois -> fiche)
-    private Map<Integer, Map<String , Fp>> fiches = new HashMap<>();
+    private Map<Integer, Map<Integer , PresenceSemaine>> fiches = new HashMap<>();
 
     public Enfant(ConfigurationEnfant configuration, String id) {
         this.configuration = configuration;
         this.id = id;
-    }
-    public Enfant(){
-
     }
 
     public ConfigurationEnfant getConfiguration() {
         return configuration;
     }
 
-    public Fp getOrCreateFp(int year, Month month) {
+    /**
+     * method pour avoir une semaine
+     * @param year l'annee de la semaine
+     * @param Semaine la semaine
+     * @return la semaine demande
+     * @throws IndexOutOfBoundsException
+     */
+    public PresenceSemaine getSemaines(int year,int Semaine)throws IndexOutOfBoundsException{
+        Map<Integer, PresenceSemaine> semaineMap = fiches.get(year);
+        if(!semaineMap.containsKey(Semaine)){
+            throw new IndexOutOfBoundsException("Semaine doesn't exist");
+        }
+        return semaineMap.get(Semaine);
+    }
+
+    /**
+     * method pour ajouter une semaine
+     * @param year l'annee de la semaine
+     * @param Semaine la semaine
+     */
+    public void SetSemaine(int year, int Semaine) {
         fiches.putIfAbsent(year, new HashMap<>());
-        Map<String, Fp> moisMap = fiches.get(year);
-
-        moisMap.putIfAbsent(month.name(), new Fp(month.name(), year));
-        return moisMap.get(month.name());
+        Map<Integer, PresenceSemaine> semaineMap = fiches.get(year);
+        semaineMap.putIfAbsent(Semaine, new PresenceSemaine(Semaine,year));
     }
 
-    public Map<Integer, Map<String, Fp>> getFiches() {
-        return fiches;
-    }
     public String getId() {
         return id;
     }

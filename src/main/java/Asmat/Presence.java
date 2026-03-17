@@ -1,23 +1,26 @@
 package Asmat;
 
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.Locale;
+//classe représentant les jours des Fp
 public class Presence {
-    private float Day;
+    private String Day;
     private float HeureArrive;
     private float HeureDepart;
-
     private float IndRepas;
     private float IndEntretien;
     private float Ajustement;
     private String Commentaire="";
 
-    public Presence(float Day) {
-        this.Day=Day;
+    public Presence(LocalDate l) {
+        this.Day=l.toString();
     }
-    public Presence(){
-
+    public LocalDate getDateLocal() {
+        return LocalDate.parse(Day);
     }
-    public float getDay() {
-        return Day;
+    public String getDay() {
+        return this.Day;
     }
     public void setHeureArrive(float HeureArrive) {
         this.HeureArrive = HeureArrive;
@@ -47,11 +50,12 @@ public class Presence {
     public void setCommentaire(String Commentaire) {
         this.Commentaire = Commentaire;
     }
+
     public String getCommentaire() {
         return Commentaire;
     }
     public float getTotalHeures() {
-        return getHeureDepart()-getHeureArrive();
+        return getHeureDepart()-getHeureArrive()+this.getAjustement();
     }
     public void setAjustement(float Ajustement) {
         this.Ajustement = Ajustement;
@@ -59,4 +63,18 @@ public class Presence {
     public float getAjustement() {
         return Ajustement;
     }
+    public static String capitalize(String inputString) {
+
+        // get the first character of the inputString
+        char firstLetter = inputString.charAt(0);
+
+        // convert it to an UpperCase letter
+        char capitalFirstLetter = Character.toUpperCase(firstLetter);
+
+        // return the output string by updating
+        //the first char of the input string
+        return inputString.replace(inputString.charAt(0), capitalFirstLetter);
+    }
+
 }
+

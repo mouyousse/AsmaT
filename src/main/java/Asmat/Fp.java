@@ -1,98 +1,56 @@
 package Asmat;
 
-import java.util.HashMap;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.YearMonth;
+import java.time.temporal.IsoFields;
+import java.time.DayOfWeek;
+import java.util.*;
 
-
+/**
+ * classe pour l'affichage des semaines d'un mois pour une FP (fiche de présence)
+ */
 public class Fp {
-
     private int year;
     private String month;
-    private int Nombredejoursactivites;
-    private float Heures;
-    private float Repas;
-    private float IndmenitesEntretien;
-    private float Tarif;
-    private float SalaireNet;
-    private HashMap<Integer, Presence> daysfpData = new HashMap<>();
+
+    //presences des jours a afficher
+    private List<Presence> presences ;
 
 
-    public Fp(String month,int year) {
-        this.year = year;
+    public Fp(String month, int year,List<Presence> presences) {
         this.month = month;
+        this.presences = presences;
     }
-    public Fp(){
 
-    }
     public String getMonth() {
         return month;
     }
 
-    public void ajouterJour(int i, Presence data) {
-        daysfpData.put(i, data);
+    public int getYear() {
+        return year;
     }
 
-    public HashMap<Integer, Presence> getJours() {
-        return daysfpData;
-    }
-    public int getYear() { return year; }
-    public void Nombredejoursactivites(int i) {
-        Nombredejoursactivites = i;
-    }
-    public int getNombredejoursactivites() {
-        return Nombredejoursactivites;
-    }
-    public void setNombredejoursactivites(int Nombredejoursactivites) {
-        this.Nombredejoursactivites = Nombredejoursactivites;
-    }
-    public void setHeures(float i) {this.Heures = i;}
-    public float getHeures() { return Heures; }
-    public float getRepas() { return Repas; }
-    public void setRepas(float repas) {this.Repas = repas;}
-    public float getIndmenitesEntretien() {return IndmenitesEntretien;}
-    public void setIndmenitesEntretien(float i){this.IndmenitesEntretien=i;}
-    public void setTarif(float tarif) {this.Tarif = tarif;}
-    public float getTarif() { return Tarif; }
-    public void setSalaireNet(float net) {this.SalaireNet = net;}
-    public float getSalaireNet() { return SalaireNet; }
-
-
-
-        public void recalculerRecap(ConfigurationEnfant config) {
-            float totalHeures = 0;
-            float totalRepas = 0;
-            float totalEntretien = 0;
-            float salaire = 0;
-            int joursActifs = 0;
-
-            for (Presence p : daysfpData.values()) {
-                if (p.getTotalHeures() > 0) {
-                    totalHeures += p.getTotalHeures();
-                    totalRepas += p.getIndRepas();
-                    totalEntretien += p.getIndEntretien();
-                    salaire += ((p.getTotalHeures() * config.getTauxHoraireNet()) + p.getIndEntretien() + p.getIndRepas());
-                    joursActifs++;
-                }
-            }
-
-            this.Heures = totalHeures;
-            this.Repas = totalRepas;
-            this.IndmenitesEntretien = totalEntretien;
-            this.SalaireNet = salaire;
-            this.Nombredejoursactivites = joursActifs;
+    /**
+     * method pour récuperer un jour associé
+     * @param jour le jour a recuperer
+     * @return la Presence (jour)
+     * @throws IndexOutOfBoundsException throw si le jour n'existe pas
+     */
+    public Presence getPresences(int jour)throws IndexOutOfBoundsException {
+        if (presences.size() > jour) {
+            throw new IndexOutOfBoundsException();
         }
-    public void initialiserJours(int nbjours,ConfigurationEnfant config) {
-        if (!daysfpData.isEmpty()) return;
-
-        for (int i = 1; i <= nbjours; i++) {
-            Presence p = new Presence(i);
-            if(config.isRepasFourni()) {
-                p.setIndRepas((float) config.getRepasPrix());
-            }
-            daysfpData.put(i, p);
-        }
+        return presences.get(jour);
     }
 
+    /**
+     * method pour ajouter un jour dans la liste
+     * @param presence jour a ajoutes
+     */
+    public void addPresences( Presence presence) {
+        presences.add(presence);
+    }
 
 
 }
-
