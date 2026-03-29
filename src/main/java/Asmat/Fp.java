@@ -1,56 +1,94 @@
 package Asmat;
 
+
+import Asmat.PresenceSemaine;
+
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.time.temporal.IsoFields;
-import java.time.DayOfWeek;
+import java.time.temporal.WeekFields;
+import java.time.Month;
 import java.util.*;
 
-/**
- * classe pour l'affichage des semaines d'un mois pour une FP (fiche de présence)
- */
+//classe pour stocker et calculer une fp contient toutes les semaines meme a cheval a corriger
 public class Fp {
     private int year;
     private String month;
+    private int Nombredejoursactivites;
+    private float Heures;
+    private float Repas;
+    private float IndmenitesEntretien;
+    private float AjustementT;
+    private float SalaireNet;
 
-    //presences des jours a afficher
-    private List<Presence> presences ;
+    private List<PresenceSemaine> Semaines = new HashMap<>();
 
 
-    public Fp(String month, int year,List<Presence> presences) {
+    public Fp(String month,int year) {
+        this.year = year;
         this.month = month;
-        this.presences = presences;
-    }
 
+    }
+    public Fp(){
+
+    }
     public String getMonth() {
         return month;
     }
 
-    public int getYear() {
-        return year;
+    public int getYear() { return year; }
+    public void Nombredejoursactivites(int i) {
+        Nombredejoursactivites = i;
+    }
+    public int getNombredejoursactivites() {
+        return Nombredejoursactivites;
+    }
+    public void setNombredejoursactivites(int Nombredejoursactivites) {
+        this.Nombredejoursactivites = Nombredejoursactivites;
+    }
+    public void setHeures(float i) {this.Heures = i;}
+    public float getHeures() { return Heures; }
+    public float getRepas() { return Repas; }
+    public void setRepas(float repas) {this.Repas = repas;}
+    public float getIndmenitesEntretien() {return IndmenitesEntretien;}
+    public void setIndmenitesEntretien(float i){this.IndmenitesEntretien=i;}
+    public void setAjustementT(float AjustementT) {this.AjustementT = AjustementT;}
+    public float getAjustementT() { return AjustementT; }
+    public void setSalaireNet(float net) {this.SalaireNet = net;}
+    public float getSalaireNet() { return SalaireNet; }
+
+
+    public void initialiserSemaines(ConfigurationEnfant config) {
+        //todo
     }
 
-    /**
-     * method pour récuperer un jour associé
-     * @param jour le jour a recuperer
-     * @return la Presence (jour)
-     * @throws IndexOutOfBoundsException throw si le jour n'existe pas
-     */
-    public Presence getPresences(int jour)throws IndexOutOfBoundsException {
-        if (presences.size() > jour) {
-            throw new IndexOutOfBoundsException();
+
+    public List<Presence> getJoursSemaine(int semaine){
+        //todo
+    }
+    public void recalculerRecap(ConfigurationEnfant config) {
+        //todo
+    }
+
+
+    private int moisEnInt(String mois) {
+        switch(mois) {
+            case "JANUARY": return 1;
+            case "FEBRUARY": return 2;
+            case "MARCH": return 3;
+            case "APRIL": return 4;
+            case "MAY": return 5;
+            case "JUNE": return 6;
+            case "JULY": return 7;
+            case "AUGUST": return 8;
+            case "SEPTEMBER": return 9;
+            case "OCTOBER": return 10;
+            case "NOVEMBER": return 11;
+            case "DECEMBER": return 12;
+            default: throw new IllegalArgumentException("Mois invalide: " + mois);
         }
-        return presences.get(jour);
     }
-
-    /**
-     * method pour ajouter un jour dans la liste
-     * @param presence jour a ajoutes
-     */
-    public void addPresences( Presence presence) {
-        presences.add(presence);
-    }
-
 
 }

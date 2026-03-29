@@ -7,9 +7,11 @@ public class PresenceSemaine {
     private int Semaine;
     private List<Presence> presence;
     private int annees;
-    public PresenceSemaine(int Semaine, int annees) {
+    private String startOfWeek;
+    public PresenceSemaine(int Semaine, int annees,String startOfWeek) {
         this.Semaine = Semaine;
         this.annees = annees;
+        this.startOfWeek = startOfWeek;
         this.presence = new ArrayList<>();
     }
 
@@ -43,6 +45,13 @@ public class PresenceSemaine {
      */
     public int getSemaine() {
         return Semaine;
+    }
+    /**
+     * method pour avoir le premier jour de la semaine
+     * @return premier jour ex:"2026-03-02"
+     */
+    public String getStartOfWeek() {
+        return startOfWeek;
     }
 
     /**

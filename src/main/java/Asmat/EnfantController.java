@@ -13,11 +13,8 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.time.temporal.IsoFields;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.time.LocalDate;
-import java.util.Locale;
-import java.util.Map;
 
 public class EnfantController {
     //data
@@ -341,9 +338,7 @@ public class EnfantController {
 
             moisChoisi = moisChoisi.toLowerCase(Locale.FRENCH);
 
-            Month month = Month.from(formatter.parse(moisChoisi));
-            YearMonth mois = YearMonth.of(year, month);
-            Fp fp = enfant.getOrCreateFp(year, month);
+            Fp fp = enfant.getFp(year, Moisenint(moisChoisi));
             creerdossier();
             // crée si besoin
 
@@ -437,27 +432,24 @@ public class EnfantController {
      * methode pour afficher tous les jours du mois sélectionné //TODO
      * @param year l'année choisi
      * @param moisChoisi le mois a afficher
-     * logic : ici la classe FP sert a l'affichage donc notre methods doit prendre toute les semaines du mois meme ceux a cheval faire les semaines grace
-     * a presenceSemaine et mettre tous dans presencemois ensuite prendre une list des presences du mois qui seront affiché donc pas ceux a calcule puis réalise les calculs
-     * grace a presencemois probablement grace a une autre methodes
+     * logic : ici la classe FP sert a l'affichage et stockage donc notre methods doit prendre toute les semaines du mois meme ceux a cheval faire les semaines grace
+     * a fp puis réalise les calculs
      */
     public void AffichageFp(int year, String moisChoisi) {
-        if (moisChoisi == null) return;
 
+        //met en francais le mois
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM", Locale.FRENCH);
         moisChoisi = moisChoisi.toLowerCase(Locale.FRENCH);
         Month month = Month.from(formatter.parse(moisChoisi));
+        //cree tous les jours
+        if(enfant.getSemaines(year,Moisenint(moisChoisi))!=null) {
+            List<PresenceSemaine> PresenceSemaines = enfant.getSemaines(year, Moisenint(moisChoisi));
+        }
+        else
+        {
+            List<PresenceSemaine> PresenceSemaines = enfant.getSemaines(year, Moisenint(moisChoisi));
+        }
 
-        Fp fp = enfant.getOrCreateFp(year, month);
-
-        // Récupérer la FP du mois précédent
-        String moisPrecedentStr = moisPrecendent(month.name());
-        Month moisPrecedent = Month.valueOf(moisPrecedentStr);
-        int yearPrecedent = moisPrecedentStr.equals("DECEMBER") ? year - 1 : year;
-        Fp fpPrecedente = enfant.getOrCreateFp(yearPrecedent, moisPrecedent);
-
-        // Recalculer le récap avec la FP précédente
-        fp.recalculerRecap(enfant.getConfiguration(), fpPrecedente);
 
         // Mettre à jour l'affichage du récap
         Nbrdejoursactivites.setText("Nombre de jours d'activités : " + fp.getNombredejoursactivites());
@@ -503,7 +495,7 @@ public class EnfantController {
     }
 
     /**
-     * method pour ajouter un jour dans une fp donc ici il faut changer la logic pour l'ajouter dans les presences semaines et surttout les calculs par mois
+     * method pour ajouter un jour dans une fp donc ici il faut changer la logic pour l'ajouter dans la fp et surtout les calculs par mois
      * donc ici l'affichage doit etre a jour sur les calculs a chaque fois grace peut etre a une methode //TODO
      * @param fp la fp
      * @param day le jour
@@ -640,20 +632,20 @@ public class EnfantController {
             default: throw new IllegalArgumentException("Mois invalide: " + mois);
         }
     }
-    private String Moisenanglais(String mois) {
+    private Integer Moisenint(String mois) {
         switch(mois) {
-            case "janvier": return "JANUARY";
-            case "février": return "FEBRUARY";
-            case "mars": return "MARCH";
-            case "avril": return "APRIL";
-            case "mai": return "MAY";
-            case "juin": return "JUNE";
-            case "juillet": return "JULY";
-            case "août": return "AUGUST";
-            case "septembre": return "SEPTEMBER";
-            case "octobre": return "OCTOBER";
-            case "novembre": return "NOVEMBER";
-            case "décembre": return "DECEMBER";
+            case "janvier": return "1";
+            case "février": return "2";
+            case "mars": return "3";
+            case "avril": return "4";
+            case "mai": return "5";
+            case "juin": return "6";
+            case "juillet": return "7";
+            case "août": return "8";
+            case "septembre": return "9";
+            case "octobre": return "10";
+            case "novembre": return "11";
+            case "décembre": return "12";
             default: throw new IllegalArgumentException("Mois invalide: " + mois);
         }
     }
