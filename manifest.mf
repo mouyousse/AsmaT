@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Main-Class: Asmat.Main
+Class-Path: lib/pdfbox-app-2.0.30.jar lib/gson-2.10.1.jar

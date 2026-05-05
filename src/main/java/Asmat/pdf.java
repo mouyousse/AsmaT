@@ -5,7 +5,11 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import java.awt.Color;
 import java.io.File;
+import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
@@ -24,9 +28,13 @@ public class pdf {
             pdf = new PDDocument();
             PDPage page = new PDPage(PDRectangle.A4);
             pdf.addPage(page);
-            PDImageXObject image =
-                    PDImageXObject.createFromFile("C:\\Users\\amaya\\IdeaProjects\\AsmaT\\src\\main\\resources\\Asmat\\images\\fp.png", pdf);
+            InputStream is = getClass().getResourceAsStream("/Asmat/images/fp.png");
 
+            PDImageXObject image = PDImageXObject.createFromByteArray(
+                    pdf,
+                    is.readAllBytes(),
+                    "fp"
+            );
 
             contentStream = new PDPageContentStream(pdf, page);
             contentStream.drawImage(
@@ -43,7 +51,7 @@ public class pdf {
 
             // ===== TITRE =====
             yPosition -= 90;
-            writeCenteredText(moisEnFrancais(fp.getMonth()).toUpperCase() + " " + fp.getYear(), 12);
+            writeCenteredText(IntEnMois(fp.getMonth()).toUpperCase() + " " + fp.getYear(), 12);
             yPosition -= 20;
 
             // ===== IDENTITÉ =====
@@ -80,18 +88,18 @@ public class pdf {
             // ===== TABLEAU JOURNALIER =====
             yPosition = drawSectionTitle("Détail journalier");
             String[] headers = {"Jour", "Heures", "Repas", "Entretien", "Commentaire"};
-            float[] colWidths = {50, 60, 60, 70, 250};
+            float[] colWidths = {70, 60, 60, 70, 250};
             yPosition = drawDailyTable(fp, headers, colWidths);
 
             // ===== RÉCAPITULATIF MENSUEL =====
             yPosition -= 20;
             yPosition = drawSectionTitle("Récapitulatif mensuel");
             String[][] recapData = {
-                    {"Jours d'activité", String.valueOf(fp.getNombredejoursactivites())},
+                    {"Jours d'activité", String.valueOf(fp.getNombreDeJoursActivites())},
                     {"Total heures", String.valueOf(fp.getHeures())},
                     {"Total repas", String.valueOf(fp.getRepas())},
-                    {"Indemnités entretien", String.valueOf(fp.getIndmenitesEntretien())},
-                    {"Salaire net", String.valueOf(fp.getSalaireNet())}
+                    {"Indemnités entretien", String.valueOf(fp.getIndemnitesEntretien())},
+                    {"Salaire net", String.valueOf(fp.getSalaire())}
             };
             yPosition = drawTwoColumnTable(recapData, true);
 
@@ -203,48 +211,57 @@ public class pdf {
         yPosition -= rowHeight;
 
         // LIGNES
-        for (int semaines : fp.getSemaines().keySet()) {
-            for (Presence p : fp.getSemaines().get(semaines)) {
-                String[] values = {
-                        String.valueOf(p.getDay()),
-                        String.valueOf(p.getTotalHeures()),
-                        String.valueOf(p.getIndRepas()),
-                        String.valueOf(p.getIndEntretien()),
-                        p.getCommentaire() == null ? "" : p.getCommentaire()
-                };
-                checkNewPage(rowHeight);
-                nextX = margin;
-                for (int i = 0; i < values.length; i++) {
-                    contentStream.addRect(nextX, yPosition - rowHeight, colWidths[i], rowHeight);
-                    contentStream.stroke();
+        for (Presence p : fp.getJours()) {
+            LocalDate date = LocalDate.parse(p.getDay());
 
-                    contentStream.beginText();
-                    contentStream.setFont(font, 10);
-                    contentStream.newLineAtOffset(nextX + cellMargin, yPosition - 15);
-                    contentStream.showText(values[i] == null ? "" : values[i]);
-                    contentStream.endText();
+            String jour = date.getDayOfWeek()
+                    .getDisplayName(java.time.format.TextStyle.FULL, Locale.FRENCH);
+            int numero = date.getDayOfMonth();
+            String[] values = {
+                    jour + " " + numero,
+                    String.valueOf(p.getTotalHeures()),
+                    String.valueOf(p.getIndRepas()),
+                    String.valueOf(p.getIndEntretien()),
+                    p.getCommentaire() == null ? "" : p.getCommentaire()
+            };
+            checkNewPage(rowHeight);
+            nextX = margin;
+            for (int i = 0; i < values.length; i++) {
+                contentStream.addRect(nextX, yPosition - rowHeight, colWidths[i], rowHeight);
+                contentStream.stroke();
 
-                    nextX += colWidths[i];
-                }
-                yPosition -= rowHeight;
+                contentStream.beginText();
+                contentStream.setFont(font, 10);
+                contentStream.newLineAtOffset(nextX + cellMargin, yPosition - 15);
+                contentStream.showText(values[i] == null ? "" : values[i]);
+                contentStream.endText();
+
+                nextX += colWidths[i];
             }
+            yPosition -= rowHeight;
         }
         return yPosition;
     }
-    private String moisEnFrancais(String mois) {
+
+    /**
+     * method pour retourner le mois en francais qui correspon au int exemple 3 -> mars
+     * @param mois le mois a retourne
+     * @return le mois
+     */
+    private String IntEnMois(Integer mois) {
         switch (mois) {
-            case "JANUARY": return "janvier";
-            case "FEBRUARY": return "février";
-            case "MARCH": return "mars";
-            case "APRIL": return "avril";
-            case "MAY": return "mai";
-            case "JUNE": return "juin";
-            case "JULY": return "juillet";
-            case "AUGUST": return "août";
-            case "SEPTEMBER": return "septembre";
-            case "OCTOBER": return "octobre";
-            case "NOVEMBER": return "novembre";
-            case "DECEMBER": return "décembre";
+            case 1: return "janvier";
+            case 2: return "février";
+            case 3: return "mars";
+            case 4: return "avril";
+            case 5: return "mai";
+            case 6: return "juin";
+            case 7: return "juillet";
+            case 8: return "août";
+            case 9: return "septembre";
+            case 10:return "octobre";
+            case 11:return "novembre";
+            case 12:return "décembre";
             default:
                 throw new IllegalArgumentException("Mois invalide: " + mois);
         }

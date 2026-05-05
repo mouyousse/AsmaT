@@ -90,13 +90,9 @@ public class AccueilController {
         choice.setValue(0.0);
         choice.getItems().addAll(4.50,5.50,6.50);
         choice.setEditable(true);
-        enfants = Main.enfants;
+        System.out.println(enfants);
         if (enfants == null) {
             enfants = new ArrayList<>();
-        }
-        // Charger tous les enfants existants dans l'UI
-        for (Enfant e : enfants) {
-            ajouterEnfantUI(e);
         }
 
         ToggleGroup sexeGroup = new ToggleGroup();
@@ -318,6 +314,7 @@ public class AccueilController {
             try {
                 Scene scene = new Scene(loader.load());
                 EnfantController controller = loader.getController();
+                controller.setenfants(enfants);
                 controller.setEnfantData(e);
                 stage.setScene(scene);
                 stage.getIcons().add(new Image(getClass().getResourceAsStream("/Asmat/images/icon.png")));
@@ -352,5 +349,17 @@ public class AccueilController {
         alert.setContentText(Message);
         alert.showAndWait();
     }
+    public void setenfants(List<Enfant> enfants){
+        this.enfants = enfants;
+        updateUI();
+    }
+    private void updateUI() {
+        enfant.getChildren().clear();
 
+        if (enfants == null) return;
+
+        for (Enfant e : enfants) {
+            ajouterEnfantUI(e);
+        }
+    }
 }

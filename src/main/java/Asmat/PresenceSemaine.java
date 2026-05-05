@@ -1,83 +1,106 @@
 package Asmat;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * PAS STOCK
+ * Représente une semaine réelle (lundi -> dimanche)
+ * Contient des présences et permet les calculs
+ */
 public class PresenceSemaine {
-    private int Semaine;
-    private List<Presence> presence;
-    private int annees;
-    private String startOfWeek;
-    public PresenceSemaine(int Semaine, int annees,String startOfWeek) {
-        this.Semaine = Semaine;
-        this.annees = annees;
-        this.startOfWeek = startOfWeek;
-        this.presence = new ArrayList<>();
+
+    private int annee;
+    private int numeroSemaine;
+
+    private LocalDate debutSemaine;
+    private LocalDate finSemaine;
+
+    private final List<Presence> presences = new ArrayList<>();
+
+    public PresenceSemaine(int annee, int numeroSemaine, LocalDate debutSemaine) {
+        this.annee = annee;
+        this.numeroSemaine = numeroSemaine;
+        this.debutSemaine = debutSemaine;
+        this.finSemaine = debutSemaine.plusDays(6);
+    }
+    public PresenceSemaine() {
+
+    }
+    public int getAnnee() {
+        return annee;
+    }
+
+    public int getNumeroSemaine() {
+        return numeroSemaine;
+    }
+
+    public LocalDate getDebutSemaine() {
+        return debutSemaine;
+    }
+
+    public LocalDate getFinSemaine() {
+        return finSemaine;
+    }
+
+    public List<Presence> getPresences() {
+        return presences;
     }
 
     /**
-     * method pour récuperer les heures réalise dans la semaine pour le calcul
-     * @return toutes les heures de la semaine
+     * method pour ajouter une presence (jour)
+     * @param presence
      */
-    public double getTotalHeures(){
-        double totalHeure = 0;
-        for(Presence p : presence){
-            totalHeure+=p.getTotalHeures();
-        }
-        return totalHeure;
+    public void ajouterPresence(Presence presence) {
+        this.presences.add(presence);
     }
+
     /**
-     * method pour recuperer toute les Indemnite de la semaine
-     * @return le total de la semaine
+     * method pour avoir le total d'heure de la semaine
+     * @return le total d'heure
      */
-    public float getInd(){
-        float total = 0;
-        for(Presence p : presence){
-            total+=p.getIndRepas();
-            total+=p.getIndEntretien();
+    public double getTotalHeures() {
+        float totalHeures = 0;
+        for (Presence presence : presences) {
+            totalHeures += presence.getHeureDepart();
+
         }
+        return totalHeures;
+    }
+
+    /**
+     * method pour obtenir le total d'indemnite
+     * @return le total d'indemnite
+     */
+    public float getTotalIndemnites() {
+        float total = 0;
+
+        for (Presence p : presences) {
+            total += p.getIndRepas();
+            total += p.getIndEntretien();
+        }
+
         return total;
     }
 
     /**
-     * method pour recuperer la semaine en question
-     * @return la semaine
+     * method pour avoir le une présence dans la semaine
+     * @param index l'index du jour
+     * @return la presence associée
+     * @throws IndexOutOfBoundsException throw si l'index n'existe pas
      */
-    public int getSemaine() {
-        return Semaine;
-    }
-    /**
-     * method pour avoir le premier jour de la semaine
-     * @return premier jour ex:"2026-03-02"
-     */
-    public String getStartOfWeek() {
-        return startOfWeek;
-    }
-
-    /**
-     * method pour set la semaine
-     * @param Semaine la semaine a set
-     */
-    public void setSemaine(int Semaine) {
-        this.Semaine = Semaine;
-    }
-
-    /**
-     * method pour récuperer la liste de presence a utilisé avec précaution
-     * @return
-     */
-    public List<Presence> getPresence() {
-        return presence;
-    }
-    /**
-    *method pour return une presence dans la liste de presence de la semaines
-    * @IndexOutOfBoundsException throw si le jour n'existe pas dans la liste
-     * @param jour le jour de la presence
-     **/
-    public Presence getPresence(int jour) throws IndexOutOfBoundsException{
-        if(presence.size()<jour){
-            throw new IndexOutOfBoundsException();
+    public Presence getPresence(int index)throws IndexOutOfBoundsException {
+        if (index < 0 || index >= presences.size()) {
+            throw new IndexOutOfBoundsException("Présence inexistante");
         }
-        return presence.get(jour-1);
+        return presences.get(index);
+    }
+    /**
+     * methode pour récupérer la présence
+     * return la liste de présences semaines
+     */
+    public List<Presence> getSemaine() {
+        return this.presences;
     }
 }

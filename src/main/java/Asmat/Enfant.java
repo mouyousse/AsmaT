@@ -17,11 +17,15 @@ public class Enfant {
         this.configuration = configuration;
         this.id = id;
     }
+    public Enfant(){
 
+    }
     public ConfigurationEnfant getConfiguration() {
         return configuration;
     }
-
+    public void setConfiguration(ConfigurationEnfant configuration) {
+        this.configuration = configuration;
+    }
 
     /**
      * method pour avoir une Fp
@@ -41,46 +45,25 @@ public class Enfant {
 
     }
     /**
-     * method pour ajouter une fp
+     * method pour ajouter une fp ou recuperer a partir de l'année et du mois
      * @param year l'annee pour la fp
-     * @param mois le mois de la fp
+     * @param month le mois de la fp
      */
-    public void setFp(int year, int mois) {
+    public Fp getOrCreateFp(int year, int month) {
 
         fiches.putIfAbsent(year, new HashMap<>());
 
-        LocalDate debutMois = LocalDate.of(year, mois, 1);
-        LocalDate finMois = debutMois.withDayOfMonth(debutMois.lengthOfMonth());
+        Map<Integer, Fp> fichesAnnee = fiches.get(year);
 
-        Fp fp = new Fp(mois,year);
-        // on parcourt toutes les semaines possibles de l'année
-        for (int week = 1; week <= 53; week++) {
+        return fichesAnnee.computeIfAbsent(month, m -> new Fp(m, year));
+    }
 
-            LocalDate monday;
-
-            try {
-                monday = LocalDate.of(year, 1, 4)
-                        .with(WeekFields.ISO.weekOfWeekBasedYear(), week)
-                        .with(WeekFields.ISO.dayOfWeek(), 1);
-            } catch (Exception e) {
-                continue; // semaine invalide (année 52/53)
-            }
-
-            LocalDate start = monday;
-            LocalDate end = monday.plusDays(6);
-
-            // chevauchement avec le mois
-            if (!start.isAfter(finMois) && !end.isBefore(debutMois)) {
-
-                PresenceSemaine semaine = new PresenceSemaine(week, year, start.toString());
-
-                fp.SetSemaine(semaine);
-            }
-        }
-
-
-        // tu stockes la FP du mois
-        fiches.get(year).put(mois, fp);
+    /**
+     * method pour retourner la hashmap de fiches
+     * @return fiches
+     */
+    public Map<Integer, HashMap<Integer,Fp>> getFiches() {
+        return fiches;
     }
 
     public String getId() {
@@ -97,6 +80,9 @@ public class Enfant {
     }
     public void setCoefficientBIndem(double CoefficientBIndem) {
         this.CoefficientBIndem = CoefficientBIndem;
+    }
+    public void setId(String id) {
+        this.id = id;
     }
 }
 

@@ -6,64 +6,76 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.*;
 import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EnfantRepository {
 
-    private static final String DOSSIER = "AsmaTdata/data"; // sous le home utilisateur
-    private static final String FICHIER = "enfants.json";
-
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
             .setPrettyPrinting()
             .create();
 
-    // ================== CHEMIN DU FICHIER ==================
     private static File getFile() {
-        String userHome = System.getProperty("user.home");
-        File dir = new File(userHome, "AsmaTdata/data");
-        if (!dir.exists()) dir.mkdirs();
+        File dir = new File(System.getProperty("user.home"), "AsmaTdata/data");
+
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new RuntimeException("Impossible de créer le dossier data");
+        }
+
         return new File(dir, "enfants.json");
     }
 
     public static List<Enfant> load() {
         File file = getFile();
 
-        // Si le fichier n'existe pas, tente de le copier depuis le JAR
-        if (!file.exists()) {
-            try (InputStream is = EnfantRepository.class.getResourceAsStream("/Data/enfants.json")) {
-                if (is != null) {
-                    Files.copy(is, file.toPath());
-                } else {
-                    save(new ArrayList<>()); // fichier vide
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                save(new ArrayList<>());
-            }
+        if (!file.exists() || file.length() == 0) {
+            return new ArrayList<>();
         }
 
-        // Lecture du fichier externe
         try (Reader reader = new FileReader(file)) {
+
             Type type = new TypeToken<List<Enfant>>() {}.getType();
             List<Enfant> enfants = gson.fromJson(reader, type);
-            return enfants != null ? enfants : new ArrayList<>();
-        } catch (IOException e) {
+
+            if (enfants == null) {
+                return new ArrayList<>();
+            }
+
+            // 🔒 sécurité : éviter crash plus tard sur données corrompues
+            for (Enfant e : enfants) {
+                if (e == null) continue;
+
+                if (e.getFiches() == null) continue;
+
+                e.getFiches().values().forEach(map -> {
+                    if (map == null) return;
+
+                    map.values().removeIf(fp ->
+                            fp == null ||
+                                    fp.getMonth() <= 0 ||
+                                    fp.getYear() <= 0
+                    );
+                });
+            }
+
+            return enfants;
+
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lecture JSON → fichier ignoré (reset safe)");
             e.printStackTrace();
             return new ArrayList<>();
         }
     }
 
-    // ================== SAUVEGARDE ==================
     public static void save(List<Enfant> enfants) {
         File file = getFile();
+
         try (Writer writer = new FileWriter(file)) {
             gson.toJson(enfants, writer);
         } catch (IOException e) {
+            System.err.println("❌ Erreur sauvegarde JSON");
             e.printStackTrace();
         }
     }
