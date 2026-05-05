@@ -67,6 +67,9 @@ run : java  --module-path "C:\javafx-sdk-21.0.9\lib"  --add-modules javafx.contr
 
 Ou via jpackage pour faire un .dmg sur macos
 
+système x64 (intel) : AsmaTx-1.0.dmg
+système arm (puce apple) : AsmaT-1.0.dmg
+
  Organisation rapide du code
 
 architechture globalement :
