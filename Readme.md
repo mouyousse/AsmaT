@@ -47,7 +47,6 @@ pas de coût
 
 inconvénients :
 
-moins versatile
 
  Compatibilité :
  
