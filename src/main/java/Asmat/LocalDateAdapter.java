@@ -6,8 +6,10 @@ import com.google.gson.*;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 
-public class LocalDateAdapter
-            implements JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
+public class LocalDateAdapter implements JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
+        public LocalDateAdapter() {
+
+        }
 
         @Override
         public JsonElement serialize(LocalDate src, Type typeOfSrc, JsonSerializationContext context) {

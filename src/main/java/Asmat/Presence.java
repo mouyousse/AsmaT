@@ -1,80 +1,92 @@
 package Asmat;
 
 import java.time.LocalDate;
-import java.time.format.TextStyle;
-import java.util.Locale;
-//classe représentant les jours des Fp
+
 public class Presence {
-    private String Day;
-    private float HeureArrive;
-    private float HeureDepart;
-    private float IndRepas;
-    private float IndEntretien;
-    private float Ajustement;
-    private String Commentaire="";
 
-    public Presence(LocalDate l) {
-        this.Day=l.toString();
+    private String day;
+
+    private float heureArrive;
+    private float heureDepart;
+    private float indRepas;
+    private float indEntretien;
+    private float ajustement;
+    private String commentaire = "";
+
+
+    public Presence() {
     }
+
+    public Presence(LocalDate date) {
+        this.day = date.toString();
+    }
+
+    // ===== DATE =====
     public LocalDate getDateLocal() {
-        return LocalDate.parse(Day);
+        return LocalDate.parse(day);
     }
+
     public String getDay() {
-        return this.Day;
+        return day;
     }
-    public void setHeureArrive(float HeureArrive) {
-        this.HeureArrive = HeureArrive;
+
+    public void setDay(String day) {
+        this.day = day;
     }
+
+    // ===== HEURES =====
     public float getHeureArrive() {
-        return HeureArrive;
+        return heureArrive;
     }
-    public void setHeureDepart(float HeureDepart) {
-        this.HeureDepart = HeureDepart;
+
+    public void setHeureArrive(float heureArrive) {
+        this.heureArrive = heureArrive;
     }
+
     public float getHeureDepart() {
-        return HeureDepart;
+        return heureDepart;
     }
 
-    public void setIndRepas(float IndRepas) {
-        this.IndRepas = IndRepas;
+    public void setHeureDepart(float heureDepart) {
+        this.heureDepart = heureDepart;
     }
+
+    // ===== INDEMNITÉS =====
     public float getIndRepas() {
-        return IndRepas;
+        return indRepas;
     }
-    public void setIndEntretien(float IndEntretien) {
-        this.IndEntretien = IndEntretien;
+
+    public void setIndRepas(float indRepas) {
+        this.indRepas = indRepas;
     }
+
     public float getIndEntretien() {
-        return IndEntretien;
-    }
-    public void setCommentaire(String Commentaire) {
-        this.Commentaire = Commentaire;
+        return indEntretien;
     }
 
-    public String getCommentaire() {
-        return Commentaire;
+    public void setIndEntretien(float indEntretien) {
+        this.indEntretien = indEntretien;
     }
-    public float getTotalHeures() {
-        return getHeureDepart()-getHeureArrive()+this.getAjustement();
-    }
-    public void setAjustement(float Ajustement) {
-        this.Ajustement = Ajustement;
-    }
+
     public float getAjustement() {
-        return Ajustement;
-    }
-    public static String capitalize(String inputString) {
-
-        // get the first character of the inputString
-        char firstLetter = inputString.charAt(0);
-
-        // convert it to an UpperCase letter
-        char capitalFirstLetter = Character.toUpperCase(firstLetter);
-
-        // return the output string by updating
-        //the first char of the input string
-        return inputString.replace(inputString.charAt(0), capitalFirstLetter);
+        return ajustement;
     }
 
+    public void setAjustement(float ajustement) {
+        this.ajustement = ajustement;
+    }
+
+    // ===== COMMENTAIRE =====
+    public String getCommentaire() {
+        return commentaire;
+    }
+
+    public void setCommentaire(String commentaire) {
+        this.commentaire = commentaire != null ? commentaire : "";
+    }
+
+    // ===== LOGIQUE =====
+    public float getTotalHeures() {
+        return (heureDepart - heureArrive) + ajustement;
+    }
 }
-
