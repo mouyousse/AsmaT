@@ -1,5 +1,8 @@
 package Asmat;
 
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,8 +31,8 @@ public class Enfant {
         fiches.putIfAbsent(year, new HashMap<>());
         Map<String, Fp> moisMap = fiches.get(year);
 
-        moisMap.putIfAbsent(month.name(), new Fp(month.name(), year));
-        return moisMap.get(month.name());
+        moisMap.putIfAbsent(month.toString(), new Fp(month.toString(), year));
+        return moisMap.get(month.toString());
     }
 
     public Map<Integer, Map<String, Fp>> getFiches() {

@@ -112,11 +112,34 @@ public class AccueilController {
 
 
         });
-        Tauxhoraire.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue) {
-                Tauxhoraire.setText(String.valueOf(Float.parseFloat(Tauxhoraire.getText())*0.78));
+        final boolean[] converted = {false};
+
+        Tauxhoraire.textProperty().addListener((obs, oldText, newText) -> {
+            if (!newText.isEmpty()) {
+                converted[0] = false; // nouvelle valeur => prochaine perte de focus recalculera
             }
         });
+
+        Tauxhoraire.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue && !converted[0]) {
+                try {
+                    float valeur = Float.parseFloat(Tauxhoraire.getText());
+                    Tauxhoraire.setText(String.valueOf(valeur * 0.78f));
+                    converted[0] = true;
+                } catch (NumberFormatException e) {
+                    Tauxhoraire.setText("");
+                }
+            }
+        });
+            Mensualisation.setOnMouseClicked(event -> {
+                if(Tauxhoraire.getText().trim().equals("") || NbHSemaine.getText().trim().equals("") || Semaines.getText().trim().equals("")){
+                    affichemessagealert("le TauxHoraire et les Semaines ainsi que le Nombre d'heures par semaine ne doivent pas etre vide");
+                }
+                else {
+                    Mensualisation.setText(String.valueOf(Float.parseFloat(Tauxhoraire.getText())*Float.parseFloat(NbHSemaine.getText())*Float.parseFloat(Semaines.getText())/12));
+                }
+            });
+
         annulerbutton.setOnAction(ev -> {
             reaform();
         });
@@ -251,8 +274,12 @@ public class AccueilController {
             enfants.add(e);  // ajouter à la liste globale
             EnfantRepository.save(enfants); // sauvegarder immédiatement
             ajouterEnfantUI(e);
+            reaform();
         }
-        reaform();
+        else {
+            affichemessagealert("Veuillez rentrer un nom et prenom");
+        }
+
     }
     private void ajouterEnfantUI(Enfant e) {
         String id = e.getId();
@@ -318,6 +345,12 @@ public class AccueilController {
             });
         });
     }
-
+    private void affichemessagealert(String Message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Information");
+        alert.setHeaderText(null);
+        alert.setContentText(Message);
+        alert.showAndWait();
+    }
 
 }
