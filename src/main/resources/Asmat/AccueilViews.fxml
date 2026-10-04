@@ -3,6 +3,7 @@
 <?import java.lang.String?>
 <?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
@@ -17,7 +18,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<StackPane prefHeight="720.0" prefWidth="830.0" style="-fx-background-color: linear-gradient(to bottom, beige, #C4AE78);" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Asmat.AccueilController">
+<StackPane prefHeight="720.0" prefWidth="830.0" style="-fx-background-color: linear-gradient(to bottom, beige, #C4AE78);" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Asmat.AccueilController">
 
     <!-- ================= PAGE PRINCIPALE ================= -->
 
@@ -25,13 +26,40 @@
         <padding>
             <Insets bottom="20" left="20" right="20" top="20" />
         </padding>
+        <StackPane prefHeight="100.0" prefWidth="830.0">
 
-        <!-- LOGO -->
-        <ImageView fitHeight="175.0" fitWidth="183.0" preserveRatio="true">
-            <image>
-                <Image url="@images/title.png" />
-            </image>
-        </ImageView>
+            <!-- LOGO AU CENTRE -->
+            <ImageView fitHeight="175.0" fitWidth="183.0" preserveRatio="true" StackPane.alignment="CENTER">
+
+                <image>
+                    <Image url="@images/title.png" />
+                </image>
+
+            </ImageView>
+
+
+            <!-- PARAMÈTRES EN HAUT À DROITE -->
+            <StackPane fx:id="settingsInd" alignment="CENTER" maxHeight="60.0" maxWidth="56.0" prefHeight="60.0" prefWidth="56.0" style="-fx-background-radius: 20;                    -fx-background-color: white;" StackPane.alignment="TOP_RIGHT">
+
+                <ImageView fitHeight="54.0" fitWidth="53.0" preserveRatio="true" StackPane.alignment="CENTER">
+
+                    <image>
+                        <Image url="@images/settings.png" />
+                    </image>
+
+                </ImageView>
+
+                <StackPane.margin>
+                    <Insets right="10.0" top="5.0" />
+                </StackPane.margin>
+
+                <cursor>
+                    <Cursor fx:constant="HAND" />
+                </cursor>
+
+            </StackPane>
+
+        </StackPane>
 
         <!-- CONTENEUR DES BOUTONS ENFANTS -->
         <HBox fx:id="enfant" alignment="CENTER" prefHeight="200" prefWidth="800" spacing="20" />
@@ -43,6 +71,9 @@
         <StackPane.margin>
             <Insets bottom="20" />
         </StackPane.margin>
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
     </Button>
 
     <!-- ================= OVERLAY FORMULAIRE ================= -->
@@ -121,16 +152,18 @@
                 <RadioButton fx:id="rbReferentMere" text="Maman" />
                 <RadioButton fx:id="rbReferentPere" text="Papa" />
             </HBox>
-         <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="537.0" spacing="40.0">
+         <HBox fx:id="hrssuppbox" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="537.0" spacing="40.0">
             <children>
                <TextField fx:id="Nemployeur" promptText="N employeur" style="-fx-background-radius: 10; -fx-border-radius: 10;" />
                <TextField fx:id="Semaines" layoutX="300.0" layoutY="10.0" promptText="Semaines" style="-fx-background-radius: 10; -fx-border-radius: 10;" />
+               <CheckBox fx:id="hrssupp" text="hrs+" />
             </children>
          </HBox>
          <HBox alignment="TOP_CENTER" layoutX="40.0" layoutY="507.0" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="537.0" spacing="40.0">
             <children>
                <TextField fx:id="NbHSemaine" promptText="Nombres d'H Semaine" style="-fx-background-radius: 10; -fx-border-radius: 10;" />
                <TextField fx:id="Mensualisation" layoutX="300.0" layoutY="10.0" promptText="Mensualisation" style="-fx-background-radius: 10; -fx-border-radius: 10;" />
+               <TextField fx:id="Jourssemaine" promptText="jours/mois" style="-fx-background-radius: 10; -fx-border-radius: 10;" />
             </children>
          </HBox>
          <HBox alignment="TOP_CENTER" layoutX="40.0" layoutY="547.0" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="537.0" spacing="40.0">
@@ -151,6 +184,9 @@
                         <String fx:value="Occasionnel" />
                     </FXCollections>
                 </items>
+                  <cursor>
+                     <Cursor fx:constant="HAND" />
+                  </cursor>
                </ComboBox>
                <ComboBox fx:id="TypeDuContrat" layoutX="297.0" layoutY="10.0" prefHeight="25.0" prefWidth="136.0" promptText="Type de contrat">
                 <items>
@@ -159,6 +195,9 @@
                         <String fx:value="CDD" />
                     </FXCollections>
                 </items>
+                  <cursor>
+                     <Cursor fx:constant="HAND" />
+                  </cursor>
                </ComboBox>
             </children>
          </HBox>
@@ -166,12 +205,112 @@
             <!-- ================= ACTIONS ================= -->
 
             <HBox alignment="CENTER" spacing="25">
-                <Button fx:id="createenfant1" prefWidth="100" style="-fx-background-color: linear-gradient(to right, #4CAF50, #66BB6A);                                -fx-text-fill: white;                                -fx-background-radius: 15;                                -fx-font-weight: bold;" text="OK" />
+                <Button fx:id="createenfant1" prefWidth="100" style="-fx-background-color: linear-gradient(to right, #4CAF50, #66BB6A);                                -fx-text-fill: white;                                -fx-background-radius: 15;                                -fx-font-weight: bold;" text="OK">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor></Button>
 
-                <Button fx:id="annulerbutton" prefWidth="100" style="-fx-background-color: linear-gradient(to right, #f44336, #e57373);                                -fx-text-fill: white;                                -fx-background-radius: 15;                                -fx-font-weight: bold;" text="Annuler" />
+                <Button fx:id="annulerbutton" prefWidth="100" style="-fx-background-color: linear-gradient(to right, #f44336, #e57373);                                -fx-text-fill: white;                                -fx-background-radius: 15;                                -fx-font-weight: bold;" text="Annuler">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor></Button>
             </HBox>
 
         </VBox>
     </VBox>
+   <VBox fx:id="IndBox" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: rgba(0,0,0,0.35);" visible="false">
+      <children>
+         <VBox alignment="CENTER" prefHeight="183.0" prefWidth="770.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);">
+            <children>
+               <Text style="-fx-font-size: 22;                          -fx-font-weight: bold;                          -fx-fill: #333;" text="Vos informations">
+                  <VBox.margin>
+                     <Insets />
+                  </VBox.margin>
+               </Text>
+               <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="50.0">
+                  <children>
+                     <TextField fx:id="Asmatnom" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="207.0" promptText="Nom" />
+                     <TextField fx:id="Asmatprenom" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="207.0" promptText="Prenom" />
+                     <TextField fx:id="Asmatadr" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="207.0" promptText="adresse" />
+                  </children>
+               </HBox>
+               <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="50.0">
+                  <children>
+                     <TextField fx:id="Asmatanum" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="207.0" promptText="Tel" />
+                     <TextField fx:id="Asmatanumsalary" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="207.0" promptText="Numero Salarié" />
+                  </children>
+               </HBox>
+               <Text style="-fx-font-size: 22;                          -fx-font-weight: bold;                          -fx-fill: #333;" text="Indemnité entretien">
+                  <VBox.margin>
+                     <Insets />
+                  </VBox.margin>
+               </Text>
+               <HBox alignment="CENTER" prefHeight="18.0" prefWidth="697.0" spacing="50.0">
+                  <children>
+                     <Text strokeType="OUTSIDE" strokeWidth="0.0" text="        6h14 :" wrappingWidth="97.13671875">
+                        <font>
+                           <Font name="Corbel Bold Italic" size="21.0" />
+                        </font>
+                        <HBox.margin>
+                           <Insets right="100.0" />
+                        </HBox.margin>
+                     </Text>
+                     <Text layoutX="378.0" layoutY="44.0" strokeType="OUTSIDE" strokeWidth="0.0" text="plus de 6h14 :" wrappingWidth="126.13671875">
+                        <font>
+                           <Font name="Corbel Bold Italic" size="21.0" />
+                        </font>
+                        <HBox.margin>
+                           <Insets />
+                        </HBox.margin>
+                     </Text>
+                  </children>
+               </HBox>
+               <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" prefHeight="28.0" prefWidth="807.0" spacing="50.0">
+                  <children>
+                     <TextField fx:id="Entretienmoins" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="199.0" promptText="Bareme Entretien" />
+                     <HBox alignment="CENTER" prefHeight="28.0" prefWidth="238.0">
+                        <children>
+                           <TextField fx:id="Entretienplus" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="207.0" promptText="Bareme Entretien">
+                              <HBox.margin>
+                                 <Insets />
+                              </HBox.margin>
+                           </TextField>
+                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="/heure" wrappingWidth="38.13671875">
+                              <font>
+                                 <Font name="Corbel Bold Italic" size="13.0" />
+                              </font>
+                           </Text>
+                        </children>
+                        <HBox.margin>
+                           <Insets />
+                        </HBox.margin>
+                     </HBox>
+                  </children>
+               </HBox>
+               <HBox alignment="CENTER" spacing="25">
+                  <children>
+                     <Button fx:id="okInd" prefWidth="100" style="-fx-background-color: linear-gradient(to right, #4CAF50, #66BB6A);                                -fx-text-fill: white;                                -fx-background-radius: 15;                                -fx-font-weight: bold;" text="OK" />
+                     <Button fx:id="annuleInd" prefWidth="100" style="-fx-background-color: linear-gradient(to right, #f44336, #e57373);                                -fx-text-fill: white;                                -fx-background-radius: 15;                                -fx-font-weight: bold;" text="Annuler" />
+                  </children>
+                  <VBox.margin>
+                     <Insets bottom="10.0" right="40.0" />
+                  </VBox.margin>
+               </HBox>
+            </children>
+            <opaqueInsets>
+               <Insets />
+            </opaqueInsets>
+            <padding>
+               <Insets bottom="10.0" left="30.0" right="30.0" top="10.0" />
+            </padding>
+            <VBox.margin>
+               <Insets />
+            </VBox.margin>
+         </VBox>
+      </children>
+      <padding>
+         <Insets left="30.0" right="30.0" />
+      </padding>
+   </VBox>
 
 </StackPane>
