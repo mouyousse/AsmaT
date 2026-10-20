@@ -64,7 +64,7 @@
    </VBox>
 
     <!-- OVERLAY AJOUT (caché par défaut) -->
-    <VBox fx:id="AjoutForm" alignment="CENTER" fillWidth="false" maxHeight="680.0" maxWidth="760.0" prefHeight="650.0" prefWidth="600.0" spacing="15" style="-fx-background-color: white;                  -fx-padding: 30;                  -fx-background-radius: 20;                  -fx-border-radius: 20;                  -fx-border-color: #999;                  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 15, 0, 0, 5);" visible="false" StackPane.alignment="CENTER">
+    <VBox fx:id="AjoutForm" alignment="CENTER" fillWidth="false" maxHeight="680.0" maxWidth="760.0" prefHeight="650.0" prefWidth="600.0" spacing="15" style="-fx-background-color: white;                  -fx-padding: 30;                  -fx-background-radius: 20;                  -fx-border-radius: 20;                  -fx-border-color: #999;                  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 15, 0, 0, 5);" StackPane.alignment="CENTER">
 
         <Label style="-fx-font-size: 22; -fx-font-weight: bold;" text="Fiches de Presence" />
       <TextField fx:id="AnneeFiche" alignment="CENTER" prefHeight="25.0" prefWidth="221.0" promptText="Année" style="-fx-background-radius: 10; -fx-border-radius: 10;" />
@@ -106,7 +106,11 @@
                         <Text fx:id="IndemniteEntretien" layoutX="12.0" layoutY="40.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Indemnités d'entretien : " wrappingWidth="358.13671875" />
                         <Text fx:id="Ajustement" strokeType="OUTSIDE" strokeWidth="0.0" text="Ajustement : " wrappingWidth="357.13671875" />
                         <Text fx:id="SalaireNet" strokeType="OUTSIDE" strokeWidth="0.0" text="Salaire Net : " wrappingWidth="358.13671875" />
-                        <CheckBox fx:id="moisincomplet" alignment="BOTTOM_LEFT" disable="true" mnemonicParsing="false" text="Mois incomplet" />
+                        <HBox fx:id="hboxPrime" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0">
+                           <children>
+                              <CheckBox fx:id="moisincomplet" alignment="BOTTOM_LEFT" disable="true" mnemonicParsing="false" text="Mois incomplet" />
+                           </children>
+                        </HBox>
                      </children>
                   </VBox>
                </children>

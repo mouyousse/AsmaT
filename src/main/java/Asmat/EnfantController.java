@@ -24,11 +24,15 @@ public class EnfantController {
     // année -> (mois -> fiche)
     TextField hrssupptext;
     private Enfant enfant;
+    CheckBox primeCheckBox = new CheckBox("Prime");
     private ParametresEntretien ParametresEntretien;
     private File file;
+    private float salaireBase;
     ComboBox<Double> choice;
     @FXML
     private Label titleEnfant;
+    @FXML
+    private HBox hboxPrime;
     @FXML
     private Button AjouterButton;
     @FXML
@@ -241,6 +245,7 @@ public class EnfantController {
             repas.setOnAction(eve->{
                 repasverif();
             });
+            ConfigurationEnfant c = enfant.getConfiguration();
             ToggleGroup referentGroup = new ToggleGroup();
             rbReferentMere.setToggleGroup(referentGroup);
             rbReferentPere.setToggleGroup(referentGroup);
@@ -248,7 +253,6 @@ public class EnfantController {
             Filletoggle.setToggleGroup(sexeGroup);
             Garcontoggle.setToggleGroup(sexeGroup);
             config.setVisible(true);
-            ConfigurationEnfant c = enfant.getConfiguration();
             prenomchamp.setText(c.getPrenom());
             nomchamp.setText(c.getNom());
             merechamp.setText(c.getMere());
@@ -272,11 +276,8 @@ public class EnfantController {
             repas.setSelected(c.isRepasFourni());
 
             repasverif();
-            if(c.getHrssupp()>0){
-                hrssupp.setSelected(true);
-                hrssuppbox.getChildren().add(hrssupptext);
-                hrssupptext.setText(String.valueOf(c.getHrssupp()));
-            }
+
+            appearhrsupp(c);
             TypeDuContrat.setValue(c.getTypeContrat());
             DureeContrat.setValue(c.getDureeContrat());
             Jourssemaine.setText(String.valueOf(c.getJourmois()));
@@ -297,7 +298,13 @@ public class EnfantController {
                 if(hrssupp.getText().trim().equals("")){
                     hrssupp.setText("0");
                 }
-                Mensualisation.setText(arrondi2(Float.parseFloat(Tauxhoraire.getText())*(Float.parseFloat(NbHSemaine.getText())+Integer.parseInt(hrssupptext.getText())*Float.parseFloat(Majoration.getText()))*Float.parseFloat(Semaines.getText())/12));
+                if(hrssupptext.getText().trim().equals("")){
+                    hrssupptext.setText("0");
+                }
+                String salairecal=arrondi2(Float.parseFloat(Tauxhoraire.getText())*(Float.parseFloat(NbHSemaine.getText())+Integer.parseInt(hrssupptext.getText())*Float.parseFloat(Majoration.getText()))*Float.parseFloat(Semaines.getText())/12);
+                if(!salairecal.equals(Mensualisation.getText())){
+                    affichemessagealert("la mensualisation calculée est différente de celle rentrée,veuillez cliquer sur la case Mensualisation pour avoir le salaire calculé");
+                }
             }
 
             // Identité
@@ -389,7 +396,7 @@ public class EnfantController {
         });
         hrssupp.setOnAction(actionEvent ->{
             if(hrssupp.isSelected()){
-                hrssuppbox.getChildren().add(hrssupptext);
+                appearhrsupp(enfant.getConfiguration());
             }
             else
             {
@@ -499,6 +506,7 @@ public class EnfantController {
 
         Fp fp = enfant.getOrCreateFp(year, moisInt);
         moisincomplet.setSelected(!fp.ismoiscomplet());
+        ConfigurationEnfant config = enfant.getConfiguration();
         refreshFp(fp);
 
         Daysvbox.getChildren().clear();
@@ -553,6 +561,16 @@ public class EnfantController {
         }
 
         ScrollDay.setContent(Daysvbox);
+        if (config.getTypeContrat().equals("CDD")) {
+
+            if (!hboxPrime.getChildren().contains(primeCheckBox)) {
+                hboxPrime.getChildren().add(primeCheckBox);
+            }
+            primeCheckBox.setOnAction(event -> {
+                refreshFp(fp);
+            });
+
+        }
     }
 
     /**
@@ -674,7 +692,9 @@ public class EnfantController {
         Repas.setText("Repas: " + arrondi2(fp.getRepas()));
         IndemniteEntretien.setText(String.format(Locale.FRANCE, "Indemnité: %.2f", fp.getIndemnitesEntretien()));
         Ajustement.setText("Ajustement: " + arrondi2(fp.getAjustement()));
-        SalaireNet.setText((String.format(Locale.FRANCE, "Salaire Net: %.2f", fp.getSalaire())));
+                    CalPrime(fp);
+        System.out.println("s"+fp.getSalaire());
+        SalaireNet.setText("Salaire Net "+ arrondi2(fp.getSalaire()));
     }
     /**
      * helper pour savoir si le text est un chiffre
@@ -777,6 +797,28 @@ public class EnfantController {
             default -> throw new IllegalArgumentException("Mois invalide: " + mois);
         };
     }
+    public void appearhrsupp(ConfigurationEnfant c){
+        if(c.getHrssupp()>0){
+            hrssupp.setSelected(true);
+            if(!hrssuppbox.getChildren().contains(hrssupptext)){
+                hrssuppbox.getChildren().add(hrssupptext); }
+            hrssupptext.setText(String.valueOf(c.getHrssupp()));
 
+        }
+    }
+    public void CalPrime(Fp fp){
+        salaireBase = service.calculSalaireNet(fp, enfant.getConfiguration());
+
+
+            if (primeCheckBox.isSelected()) {
+                fp.setSalaire((float) (fp.getSalaire()*1.20));
+                System.out.println("salaire+ = " + fp.getSalaire());
+            } else {
+                fp.setSalaire(salaireBase);
+                System.out.println("salaire- = " + fp.getSalaire());
+            }
+
+
+    }
 
 }

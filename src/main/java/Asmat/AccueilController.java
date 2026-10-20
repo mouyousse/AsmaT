@@ -180,7 +180,10 @@ public class AccueilController {
                 if(hrssupp.getText().trim().equals("")){
                     hrssupp.setText("0");
                 }
-                Mensualisation.setText(arrondi2(Float.parseFloat(Tauxhoraire.getText())*(Float.parseFloat(NbHSemaine.getText())+Integer.parseInt(hrssupptext.getText())*Float.parseFloat(Majoration.getText()))*Float.parseFloat(Semaines.getText())/12));
+                String salairecal=arrondi2(Float.parseFloat(Tauxhoraire.getText())*(Float.parseFloat(NbHSemaine.getText())+Integer.parseInt(hrssupptext.getText())*Float.parseFloat(Majoration.getText()))*Float.parseFloat(Semaines.getText())/12);
+                if(!salairecal.equals(Mensualisation.getText())){
+                    affichemessagealert("la mensualisation calculée est différente de celle rentrée,veuillez cliquer sur la case Mensualisation pour avoir le salaire calculé");
+                }
             }
             senform();
         });
